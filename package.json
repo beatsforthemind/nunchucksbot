@@ -1,0 +1,25 @@
+{
+  "name": "nunchucksbot",
+  "version": "1.0.0",
+  "description": "Slackbot for Nunchucks Slack!",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beatsforthemind/nunchucksbot.git"
+  },
+  "keywords": [
+    "slack"
+  ],
+  "author": "Anderson",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/beatsforthemind/nunchucksbot/issues"
+  },
+  "homepage": "https://github.com/beatsforthemind/nunchucksbot#readme",
+  "dependencies": {
+    "botkit": "0.0.7"
+  }
+}
