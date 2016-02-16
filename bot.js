@@ -83,26 +83,36 @@ var bot = controller.spawn({
 }).startRTM();
 
 
-controller.hears(['hello','hi'],'direct_message,direct_mention,mention',function(bot, message) {
+controller.hears(['hello','^hi$'],'direct_message,direct_mention,mention',function(bot, message) {
+	var matches = message.text.match(/(hello|\bhi\b)/i);
+	if(matches){
+		bot.api.reactions.add({
+			timestamp: message.ts,
+			channel: message.channel,
+			name: 'robot_face',
+		},function(err, res) {
+			if (err) {
+				bot.botkit.log('Failed to add emoji reaction :(',err);
+			}
+		});
 
-    bot.api.reactions.add({
-        timestamp: message.ts,
-        channel: message.channel,
-        name: 'robot_face',
-    },function(err, res) {
-        if (err) {
-            bot.botkit.log('Failed to add emoji reaction :(',err);
-        }
-    });
 
-
-    controller.storage.users.get(message.user,function(err, user) {
-        if (user && user.name) {
-            bot.reply(message,'Hello ' + user.name + '!!');
-        } else {
-            bot.reply(message,'Hello.');
-        }
-    });
+		controller.storage.users.get(message.user,function(err, user) {
+			if (user && user.name) {
+				bot.reply(message,'Hello ' + user.name + '!!');
+			} else {
+				var userNumber = message.user;
+				bot.api.users.info({user:userNumber}, function(err, response) {
+					if(err) {
+						bot.botkit.log("ERROR!!!!", err);
+					} else {
+						//bot.botkit.log("SUCCESS!", response);
+						bot.reply(message,'Hello ' + response.user.name + '!');
+					}
+				});
+			}
+		});
+	}
 });
 
 controller.hears(['call me (.*)'],'direct_message,direct_mention,mention',function(bot, message) {
@@ -205,8 +215,6 @@ controller.hears(['search (.*)'],'direct_message,direct_mention,mention',functio
 			switch(type) { //send query to proper function
 				//add new search types here.
 				
-				case default:
-					break;
 			}
 		}
 	}
@@ -222,18 +230,37 @@ controller.hears(['search'],'direct_message,direct_mention,mention',function(bot
 
 
 controller.on('user_channel_join',function(bot,message) {
-    bot.reply(message,'Welcome to the channel, @' + message.user + '!');
+	var userNumber = message.user;
+	bot.api.users.info({user:userNumber}, function(err, response) {
+		if(err) {
+			bot.botkit.log("ERROR!!!!", err);
+		} else {
+			bot.reply(message,'Welcome to the channel, @' + response.user.name + '!');
+		}
+	});
 });
 
 controller.on('user_channel_leave',function(bot,message) {
     bot.reply(message,'Goodbye, @' + message.user + '!');
 });
 
-controller.hears(['roll d(\d{1,3})'],'direct_message,direct_mention,mention',function(bot, message) { 
-	var matches = message.text.match(/roll d(\d{1,3})/i);
-	var numberOfSides = matches[1];
-	var result = getRandomInt(1, numberOfSides);
-	bot.reply(message,'Roll result: ' + result);
+controller.hears(['roll '],'direct_message,direct_mention,mention',function(bot, message) { 
+	var matches = message.text.match(/roll d(\d+)/i);
+	if(matches) {
+		var numberOfSides = matches[1];
+		var result = getRandomInt(1, numberOfSides);
+		bot.reply(message,'Roll result: ' + result);
+	} else {
+		var matches = message.text.match(/roll (\d+)d(\d+)/i);
+		if(matches) {
+			var numberOfDice = matches[1];
+			var numberOfSides = matches[2];
+			for (i = 0; i < numberOfDice; i++) {
+				var result = getRandomInt(1, numberOfSides);
+				bot.reply(message,'Roll result #'+ i + ': ' + result);
+			}
+		}
+	}
 });
 
 function getRandomInt(min, max) {
