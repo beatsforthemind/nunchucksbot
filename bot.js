@@ -219,3 +219,23 @@ controller.hears(['search (.*)'],'direct_message,direct_mention,mention',functio
 controller.hears(['search'],'direct_message,direct_mention,mention',function(bot, message) { 
 	bot.reply(message,'Syntax: search $type_of_search $query_to_be_searched');
 });
+
+
+controller.on('user_channel_join',function(bot,message) {
+    bot.reply(message,'Welcome to the channel, @' + message.user + '!');
+});
+
+controller.on('user_channel_leave',function(bot,message) {
+    bot.reply(message,'Goodbye, @' + message.user + '!');
+});
+
+controller.hears(['roll d(\d{1,3})'],'direct_message,direct_mention,mention',function(bot, message) { 
+	var matches = message.text.match(/roll d(\d{1,3})/i);
+	var numberOfSides = matches[1];
+	var result = getRandomInt(1, numberOfSides);
+	bot.reply(message,'Roll result: ' + result);
+});
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
