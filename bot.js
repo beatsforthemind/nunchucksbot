@@ -204,9 +204,7 @@ controller.hears(['search (.*)'],'direct_message,direct_mention,mention',functio
 		} else {
 			switch(type) { //send query to proper function
 				//add new search types here.
-				
-				case default:
-					break;
+
 			}
 		}
 	}
