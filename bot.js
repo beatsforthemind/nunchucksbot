@@ -82,6 +82,29 @@ var bot = controller.spawn({
     token: process.env.token
 }).startRTM();
 
+controller.hears(['moon man', 'hopalicious', 'pure hoppiness', 'ghost ship'],'message_received,ambient',function(bot, message) {
+	bot.api.reactions.add({
+		timestamp: message.ts,
+		channel: message.channel,
+		name: '+1',
+	},function(err, res) {
+		if (err) {
+			bot.botkit.log('Failed to add emoji reaction :(',err);
+		}
+	});
+});
+
+controller.hears(['bud light', 'miller lite', 'blue moon', 'corona'],'message_received,ambient',function(bot, message) {
+	bot.api.reactions.add({
+		timestamp: message.ts,
+		channel: message.channel,
+		name: '-1',
+	},function(err, res) {
+		if (err) {
+			bot.botkit.log('Failed to add emoji reaction :(',err);
+		}
+	});
+});
 
 controller.hears(['hello','^hi$'],'direct_message,direct_mention,mention',function(bot, message) {
 	var matches = message.text.match(/(hello|\bhi\b)/i);
