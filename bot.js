@@ -230,7 +230,12 @@ function imageSearch(message, query) {
 			var $ = cheerio.load(html);
 			var primaryImg = $('img').first().attr('src');
 			request(primaryImg).pipe(fs.createWriteStream('image.jpg'));
-			bot.api.files.upload({file:'image.jpg',channels:message,filename:'image.jpg'});
+			var channelToPostTo = message.channel;
+			bot.api.files.upload({
+				file: fs.createReadStream('image.jpg'),
+				channels: channelToPostTo,
+				filename: 'image.jpg'
+			});
 		}
 	});
 }
