@@ -71,6 +71,9 @@ if (!process.env.token) {
 
 // var Botkit = require('./lib/Botkit.js');
 var Botkit = require('./node_modules/botkit/lib/Botkit.js');
+var cheerio = require('./node_modules/cheerio');
+var request = require('./node_modules/request');
+var fs = require('fs');
 
 var os = require('os');
 
@@ -220,5 +223,14 @@ controller.hears(['search'],'direct_message,direct_mention,mention',function(bot
 });
 
 function imageSearch(message, query) {
-	bot.reply(message, 'you requested an image search for ' + query); //obviously just for testing
+	//bot.reply(message, 'you requested an image search for ' + query); //obviously just for testing
+	var urlToRequest = 'https://www.google.com/search?tbm=isch&q=' + query;
+	request(urlToRequest, function (error, response, html) {
+	    if (!error && response.statusCode == 200) {
+			var $ = cheerio.load(html);
+			var primaryImg = $('img').first().attr('src');
+			request(primaryImg).pipe(fs.createWriteStream('image.jpg'));
+			bot.api.files.upload({file:'image.jpg',channels:message,filename:'image.jpg'});
+		}
+	});
 }
