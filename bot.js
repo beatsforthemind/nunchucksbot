@@ -82,7 +82,7 @@ var bot = controller.spawn({
     token: process.env.token
 }).startRTM();
 
-controller.hears(['moon man', 'hopalicious', 'pure hoppiness', 'ghost ship', 'fat squirrel', 'karben4', 'ale asylum', 'new glarus'],'message_received,ambient',function(bot, message) {
+controller.hears(['moon man', 'microbrew', 'hopalicious', 'pure hoppiness', 'ghost ship', 'fat squirrel', 'karben4', 'ale asylum', 'new glarus'],'message_received,ambient',function(bot, message) {
 	bot.api.reactions.add({
 		timestamp: message.ts,
 		channel: message.channel,
@@ -112,7 +112,39 @@ controller.hears(['^knock knock'],'direct_message,direct_mention,mention',functi
 			convo.next();
 			convo.ask(response.text + ' who?', function(secResponse, convo) {
 				convo.next();
-				convo.say('ROFL!!!');
+				var naughtyWords = ['bitch', 'cunt', 'vagina', 'slut', 'whore', 'fuck', 'pussy', 'ass', 'cock', 'dick', 'penis', 'tits', 'boobs', 'breasts'];
+				var naughtyWordDetected = false;
+				for(i = 0; i < naughtyWords.length; i++) {
+					if(secResponse.text.indexOf(naughtyWords[i]) > -1) {
+						naughtyWordDetected = true;
+					}
+				}
+				if(naughtyWordDetected) {
+					convo.say('How rude! :angry:');
+				} else {
+					switch(getRandomInt(0,5)) {
+						case 0:
+							convo.say('ROFL!!!');
+							break;
+						case 1:
+							convo.say('lmao');
+							break;
+						case 2:
+							convo.say('You\'re a funny guy :wink:');
+							break;
+						case 3:
+							convo.say(':laughing:');
+							break;
+						case 4:
+							convo.say(':stuck_out_tongue_winking_eye:');
+							break;
+						case 5:
+							convo.say('Good one! :wink:');
+							break;
+						default:
+							convo.say(':wink:');
+					}
+				}
 			});
 		});
 		
