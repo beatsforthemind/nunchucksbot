@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/beatsforthemind/nunchucksbot#readme",
   "dependencies": {
-    "botkit": "0.0.7"
+    "botkit": "0.0.7",
+    "googleapis": "^2.1.7"
   }
 }
