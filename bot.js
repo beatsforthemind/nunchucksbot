@@ -82,7 +82,7 @@ var bot = controller.spawn({
     token: process.env.token
 }).startRTM();
 
-controller.hears(['moon man', 'hopalicious', 'pure hoppiness', 'ghost ship'],'message_received,ambient',function(bot, message) {
+controller.hears(['moon man', 'hopalicious', 'pure hoppiness', 'ghost ship', 'fat squirrel', 'karben4', 'ale asylum', 'new glarus'],'message_received,ambient',function(bot, message) {
 	bot.api.reactions.add({
 		timestamp: message.ts,
 		channel: message.channel,
@@ -94,7 +94,7 @@ controller.hears(['moon man', 'hopalicious', 'pure hoppiness', 'ghost ship'],'me
 	});
 });
 
-controller.hears(['bud light', 'miller lite', 'blue moon', 'corona'],'message_received,ambient',function(bot, message) {
+controller.hears(['bud light', 'miller lite', 'blue moon', 'corona', 'miller light', 'budweiser', 'mgd'],'message_received,ambient',function(bot, message) {
 	bot.api.reactions.add({
 		timestamp: message.ts,
 		channel: message.channel,
@@ -103,6 +103,19 @@ controller.hears(['bud light', 'miller lite', 'blue moon', 'corona'],'message_re
 		if (err) {
 			bot.botkit.log('Failed to add emoji reaction :(',err);
 		}
+	});
+});
+
+controller.hears(['^knock knock'],'direct_message,direct_mention,mention',function(bot, message) {
+	bot.startConversation(message, function(err, convo) {
+		convo.ask('Who\'s there?', function(response, convo) {
+			convo.next();
+			convo.ask(response.text + ' who?', function(secResponse, convo) {
+				convo.next();
+				convo.say('ROFL!!!');
+			});
+		});
+		
 	});
 });
 
