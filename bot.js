@@ -250,7 +250,40 @@ function getRandomInt(min, max) {
 
 
 
-
+//this be the main search listener that delegates to other functions based on second "argument"
+controller.hears(['search (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+  
+	var goodCommand = true; //set false if unable to parse
+  var matches = message.text.match(/search (\S*)/i); //get the word immediately following "search"
+  
+	if(!matches && matches !== null) { //type wasn't found
+		goodCommand = false;
+	} else {
+	}
+	
+	if(goodCommand && typeof matches[1] != 'undefined') {
+		var type = matches[1]; //select the right one from the resultant array
+		var positionAfterType = message.text.indexOf(type) + type.length + 1;
+		var query = message.text.substring(positionAfterType); //get everything after the "type" in the message, adding 1 to account for the space character following the type
+      
+		if(!query) { //query wasn't found
+			goodCommand = false;
+		} else {
+			switch(type) { //send query to proper function
+  			case "img":
+				case "image":
+				case "images":
+					gImgQuery(message, query);
+					break;
+				// default:
+			}
+		}
+	}
+	
+	if(goodCommand === false) { //some sort of problem, throw error message
+		// bot.reply(message,'There was a problem with your search.  Please try again.  _Hint - Use the following syntax: search $type_of_search $query_to_be_searched_');
+	}
+});
 
 
 function imageSearch(message, query) {
