@@ -24,6 +24,7 @@ youTube.addParam('type', 'video');
 
 var controller = Botkit.slackbot({
   debug: true,
+  json_file_store: './dataDir'
 });
 
 
