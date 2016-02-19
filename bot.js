@@ -19,6 +19,7 @@ var customsearch = google.customsearch('v1');
 var YouTube = require('youtube-node');
 var youTube = new YouTube();
 youTube.setKey(keys.gapi1.key);
+youTube.addParam('type', 'video');
 
 
 var controller = Botkit.slackbot({
@@ -356,9 +357,11 @@ function ytQuery(message, query) {
         return;
       }
       else {
-        console.log(JSON.stringify(res, null, 2));
-        bot.reply(message, "https://youtube.com/watch?v="+res.items[0].id.videoId);
-        return;
+        if(res.items[0] && res.items[0] != undefined) {
+          console.log(JSON.stringify(res, null, 2));
+          bot.reply(message, "https://youtube.com/watch?v="+res.items[0].id.videoId);
+          return;
+        }
       }
     });
   }
