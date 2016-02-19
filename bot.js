@@ -6,9 +6,20 @@ if (!process.env.token) {
 }
 
 var Botkit = require('./node_modules/botkit/lib/Botkit.js');
+<<<<<<< HEAD
+=======
+var cheerio = require('./node_modules/cheerio');
+var request = require('./node_modules/request');
+var fs = require('fs');
+>>>>>>> image-search
 var os = require('os');
 var google = require('googleapis');
 var customsearch = google.customsearch('v1');
+
+
+var google = require('googleapis');
+var customsearch = google.customsearch('v1');
+var keys = require('./keys.js');
 
 
 var controller = Botkit.slackbot({
@@ -16,7 +27,10 @@ var controller = Botkit.slackbot({
 });
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> image-search
 var bot = controller.spawn({
     token: process.env.token
 }).startRTM();
@@ -205,6 +219,7 @@ function formatUptime(uptime) {
     return uptime;
 }
 
+<<<<<<< HEAD
 //this be the main search listener that delegates to other functions based on second "argument"
 controller.hears(['search (.*)'],'direct_message,direct_mention,mention',function(bot, message) { 
 	var goodCommand = true; //set false if unable to parse
@@ -222,12 +237,48 @@ controller.hears(['search (.*)'],'direct_message,direct_mention,mention',functio
 			switch(type) { //send query to proper function
 				//add new search types here.
 
+=======
+
+
+
+
+//this be the main search listener that delegates to other functions based on second "argument"
+controller.hears(['search (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+  
+	var goodCommand = true; //set false if unable to parse
+  var matches = message.text.match(/search (\S*)/i); //get the word immediately following "search"
+  
+	if(!matches && matches !== null) { //type wasn't found
+		goodCommand = false;
+	} else {
+	}
+	
+	if(goodCommand && typeof matches[1] != 'undefined') {
+		var type = matches[1]; //select the right one from the resultant array
+		var positionAfterType = message.text.indexOf(type) + type.length + 1;
+		var query = message.text.substring(positionAfterType); //get everything after the "type" in the message, adding 1 to account for the space character following the type
+      
+		if(!query) { //query wasn't found
+			goodCommand = false;
+		} else {
+			switch(type) { //send query to proper function
+  			case "img":
+				case "image":
+				case "images":
+					gImgQuery(message, query);
+					break;
+				// default:
+>>>>>>> image-search
 			}
 		}
 	}
 	
 	if(goodCommand === false) { //some sort of problem, throw error message
+<<<<<<< HEAD
 		bot.reply(message,'There was a problem with your search.  Please try again.  _Hint - Use the following syntax: search $type_of_search $query_to_be_searched_');
+=======
+		// bot.reply(message,'There was a problem with your search.  Please try again.  _Hint - Use the following syntax: search $type_of_search $query_to_be_searched_');
+>>>>>>> image-search
 	}
 });
 
@@ -235,6 +286,7 @@ controller.hears(['search'],'direct_message,direct_mention,mention',function(bot
 	bot.reply(message,'Syntax: search $type_of_search $query_to_be_searched');
 });
 
+<<<<<<< HEAD
 
 controller.on('user_channel_join',function(bot,message) {
 	var userNumber = message.user;
@@ -272,4 +324,47 @@ controller.hears(['roll '],'direct_message,direct_mention,mention',function(bot,
 
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
+=======
+function imageSearch(message, query) {
+	//bot.reply(message, 'you requested an image search for ' + query); //obviously just for testing
+	var urlToRequest = 'https://www.google.com/search?tbm=isch&q=' + query;
+	request(urlToRequest, function (error, response, html) {
+	    if (!error && response.statusCode == 200) {
+			var $ = cheerio.load(html);
+			var primaryImg = $('img').first().attr('src');
+			request(primaryImg).pipe(fs.createWriteStream('image.jpg'));
+			var channelToPostTo = message.channel;
+			bot.api.files.upload({
+				file: fs.createReadStream('image.jpg'),
+				channels: channelToPostTo,
+				filename: 'image.jpg'
+			});
+		}
+	});
+}
+
+
+//https://developers.google.com/custom-search/json-api/v1/reference/cse/list
+function gImgQuery(message, query) {
+  if (query) {
+    const CX = keys.gapi1.cx;
+    const API_KEY = keys.gapi1.key;
+    customsearch.cse.list({ cx: CX, auth: API_KEY, q: query, searchType: "image", safe: "medium", imgSize: "medium" }, function(err, resp) {
+      if (err) {
+        console.log('An error occured', err);
+        bot.reply(message, "Sorry, can't do that.");
+        return;
+      }
+      if (resp.items && resp.items.length > 0) {
+        console.log(resp.items[0].link);
+        bot.reply(message, resp.items[0].link);
+        return;
+      } else {
+        bot.reply(message, "Sorry, no results.");
+        return;   
+      }
+    });
+  } else {
+  }
+>>>>>>> image-search
 }

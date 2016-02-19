@@ -2,4 +2,12 @@
 node_modules/
 api_token
 _scratch
+<<<<<<< HEAD
 googleTest.js
+=======
+googleTest.js
+test.js
+start.sh
+image.jpg
+keys.js
+>>>>>>> image-search

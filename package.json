@@ -21,6 +21,13 @@
   "homepage": "https://github.com/beatsforthemind/nunchucksbot#readme",
   "dependencies": {
     "botkit": "0.0.7",
+<<<<<<< HEAD
     "googleapis": "^2.1.7"
+=======
+    "cheerio": "^0.20.0",
+    "fs": "0.0.2",
+    "googleapis": "^2.1.7",
+    "request": "^2.69.0"
+>>>>>>> image-search
   }
 }
