@@ -10,9 +10,15 @@ var cheerio = require('./node_modules/cheerio');
 var request = require('./node_modules/request');
 var fs = require('fs');
 var os = require('os');
+
+var keys = require('./keys.js');
+
 var google = require('googleapis');
 var customsearch = google.customsearch('v1');
-var keys = require('./keys.js');
+
+var YouTube = require('youtube-node');
+var youTube = new YouTube();
+youTube.setKey(keys.gapi1.key);
 
 
 var controller = Botkit.slackbot({
@@ -280,6 +286,11 @@ controller.hears(['search (.*)'], 'direct_message,direct_mention,mention,ambient
 				case "images":
 					gImgQuery(message, query);
 					break;
+				case "youtube":
+				case "yt":
+				case "vid":
+				  ytQuery(message, query);
+					break;
 				// default:
 			}
 		}
@@ -331,5 +342,24 @@ function gImgQuery(message, query) {
       }
     });
   } else {
+  }
+}
+
+
+//https://www.npmjs.com/package/youtube-node
+function ytQuery(message, query) {
+  if (query) {
+    youTube.search(query, 1, function(err, res) {
+      if (err) {
+        console.log('An error occured', err);
+        bot.reply(message, "Sorry, can't do that.");
+        return;
+      }
+      else {
+        console.log(JSON.stringify(res, null, 2));
+        bot.reply(message, "https://youtube.com/watch?v="+res.items[0].id.videoId);
+        return;
+      }
+    });
   }
 }
