@@ -69,17 +69,21 @@ if (!process.env.token) {
     process.exit(1);
 }
 
-// var Botkit = require('./lib/Botkit.js');
 var Botkit = require('./node_modules/botkit/lib/Botkit.js');
 var cheerio = require('./node_modules/cheerio');
 var request = require('./node_modules/request');
 var fs = require('fs');
-
 var os = require('os');
+
+var google = require('googleapis');
+var customsearch = google.customsearch('v1');
+var keys = require('./keys.js');
+
 
 var controller = Botkit.slackbot({
     debug: true,
 });
+
 
 var bot = controller.spawn({
     token: process.env.token
@@ -191,30 +195,42 @@ function formatUptime(uptime) {
     return uptime;
 }
 
+
+
+
+
 //this be the main search listener that delegates to other functions based on second "argument"
-controller.hears(['search (.*)'],'direct_message,direct_mention,mention',function(bot, message) { 
+controller.hears(['search (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+  
 	var goodCommand = true; //set false if unable to parse
-    var matches = message.text.match(/search (\S*)/i); //get the word immediately following "search"
-	if(!matches) { //type wasn't found
+  var matches = message.text.match(/search (\S*)/i); //get the word immediately following "search"
+  
+	if(!matches && matches !== null) { //type wasn't found
 		goodCommand = false;
-	} 
-	if(goodCommand) {
+	} else {
+	}
+	
+	if(goodCommand && typeof matches[1] != 'undefined') {
 		var type = matches[1]; //select the right one from the resultant array
 		var positionAfterType = message.text.indexOf(type) + type.length + 1;
 		var query = message.text.substring(positionAfterType); //get everything after the "type" in the message, adding 1 to account for the space character following the type
+      
 		if(!query) { //query wasn't found
-			goodCommand = false; 
+			goodCommand = false;
 		} else {
 			switch(type) { //send query to proper function
+  			case "img":
 				case "image":
 				case "images":
-					imageSearch(message, query);
+					gImgQuery(message, query);
+					break;
+				// default:
 			}
 		}
 	}
 	
 	if(goodCommand === false) { //some sort of problem, throw error message
-		bot.reply(message,'There was a problem with your search.  Please try again.  _Hint - Use the following syntax: search $type_of_search $query_to_be_searched_');
+		// bot.reply(message,'There was a problem with your search.  Please try again.  _Hint - Use the following syntax: search $type_of_search $query_to_be_searched_');
 	}
 });
 
@@ -238,4 +254,29 @@ function imageSearch(message, query) {
 			});
 		}
 	});
+}
+
+
+//https://developers.google.com/custom-search/json-api/v1/reference/cse/list
+function gImgQuery(message, query) {
+  if (query) {
+    const CX = keys.gapi1.cx;
+    const API_KEY = keys.gapi1.key;
+    customsearch.cse.list({ cx: CX, auth: API_KEY, q: query, searchType: "image", safe: "medium", imgSize: "medium" }, function(err, resp) {
+      if (err) {
+        console.log('An error occured', err);
+        bot.reply(message, "Sorry, can't do that.");
+        return;
+      }
+      if (resp.items && resp.items.length > 0) {
+        console.log(resp.items[0].link);
+        bot.reply(message, resp.items[0].link);
+        return;
+      } else {
+        bot.reply(message, "Sorry, no results.");
+        return;   
+      }
+    });
+  } else {
+  }
 }
