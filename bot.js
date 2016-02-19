@@ -19,9 +19,11 @@ var controller = Botkit.slackbot({
   debug: true,
 });
 
+
 var bot = controller.spawn({
   token: process.env.token
 }).startRTM();
+
 
 controller.hears(['moon man', 'microbrew', 'hopalicious', 'pure hoppiness', 'ghost ship', 'fat squirrel', 'karben4', 'ale asylum', 'new glarus'],'message_received,ambient,mention',function(bot, message) {
 	bot.api.reactions.add({
@@ -35,6 +37,7 @@ controller.hears(['moon man', 'microbrew', 'hopalicious', 'pure hoppiness', 'gho
 	});
 });
 
+
 controller.hears(['bud light', 'miller lite', 'blue moon', 'corona', 'miller light', 'budweiser', 'mgd'],'message_received,ambient,mention',function(bot, message) {
 	bot.api.reactions.add({
 		timestamp: message.ts,
@@ -46,6 +49,7 @@ controller.hears(['bud light', 'miller lite', 'blue moon', 'corona', 'miller lig
 		}
 	});
 });
+
 
 controller.hears(['^knock knock'],'direct_message,direct_mention,mention',function(bot, message) {
 	bot.startConversation(message, function(err, convo) {
@@ -92,6 +96,7 @@ controller.hears(['^knock knock'],'direct_message,direct_mention,mention',functi
 	});
 });
 
+
 controller.hears(['hello','^hi$'],'direct_message,direct_mention,mention',function(bot, message) {
 	var matches = message.text.match(/(hello|\bhi\b)/i);
 	if(matches){
@@ -122,6 +127,7 @@ controller.hears(['hello','^hi$'],'direct_message,direct_mention,mention',functi
 		});
 	}
 });
+
 
 controller.hears(['call me (.*)'],'direct_message,direct_mention,mention',function(bot, message) {
     var matches = message.text.match(/call me (.*)/i);
@@ -188,6 +194,7 @@ controller.hears(['uptime','identify yourself','who are you','what is your name'
 
 });
 
+
 function formatUptime(uptime) {
     var unit = 'second';
     if (uptime > 60) {
@@ -208,7 +215,6 @@ function formatUptime(uptime) {
 
 
 
-
 controller.on('user_channel_join',function(bot,message) {
 	var userNumber = message.user;
 	bot.api.users.info({user:userNumber}, function(err, response) {
@@ -223,6 +229,7 @@ controller.on('user_channel_join',function(bot,message) {
 controller.on('user_channel_leave',function(bot,message) {
     bot.reply(message,'Goodbye, @' + message.user + '!');
 });
+
 
 controller.hears(['roll '],'direct_message,direct_mention,mention',function(bot, message) { 
 	var matches = message.text.match(/roll d(\d+)/i);
@@ -246,8 +253,6 @@ controller.hears(['roll '],'direct_message,direct_mention,mention',function(bot,
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
-
 
 
 //this be the main search listener that delegates to other functions based on second "argument"
