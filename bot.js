@@ -335,8 +335,10 @@ function gImgQuery(message, query) {
         return;
       }
       if (resp.items && resp.items.length > 0) {
-        console.log(resp.items[0].link);
-        bot.reply(message, resp.items[0].link);
+        bot.reply(message, resp.items[getRandomInt(0, (resp.items.length - 1))].link);
+        console.log(resp.items.length);
+        //console.log(resp.items[0].link);
+        //bot.reply(message, resp.items[0].link);
         return;
       } else {
         bot.reply(message, "Sorry, no results.");
