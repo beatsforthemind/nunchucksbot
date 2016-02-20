@@ -282,7 +282,7 @@ controller.hears(['search (.*)'], 'direct_message,direct_mention,mention,ambient
 		if(!query) { //query wasn't found
 			goodCommand = false;
 		} else {
-			switch(type) { //send query to proper function
+			switch(type.toLowerCase()) { //send query to proper function
   			case "img":
 				case "image":
 				case "images":
