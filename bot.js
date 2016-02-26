@@ -153,6 +153,38 @@ controller.hears(['call me (.*)'],'direct_message,direct_mention,mention',functi
     });
 });
 
+
+controller.hears(['savethingy (.*)'],'direct_message,direct_mention,mention',function(bot, message) {
+    var matches = message.text.match(/savethingy (.*)/i);
+    var thingy = matches[1];
+    var thingySave = {
+                id: "word",
+                //id: thingy,
+                word: thingy
+            };
+    
+    controller.storage.test.save(thingySave, function(err, id) {
+        bot.reply(message,'Got: ' + thingySave.word);
+    });
+    
+    /*
+    controller.storage.test.get(message.user,function(err, user) {
+        if (!user) {
+            user = {
+                id: message.user,
+            };
+        }
+        user.name = name;
+        controller.storage.users.save(user,function(err, id) {
+            bot.reply(message,'Got it. I will call you ' + user.name + ' from now on.');
+        });
+    });
+    */
+});
+
+
+
+
 controller.hears(['what is my name','who am i'],'direct_message,direct_mention,mention',function(bot, message) {
 
     controller.storage.users.get(message.user,function(err, user) {
