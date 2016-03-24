@@ -32,31 +32,31 @@ var bot = controller.spawn({
   token: process.env.token
 }).startRTM();
 
-
-controller.hears(['moon man', 'microbrew', 'hopalicious', 'pure hoppiness', 'ghost ship', 'fat squirrel', 'karben4', 'ale asylum', 'new glarus'],'message_received,ambient,mention',function(bot, message) {
-	bot.api.reactions.add({
-		timestamp: message.ts,
-		channel: message.channel,
-		name: '+1',
-	},function(err, res) {
-		if (err) {
-			bot.botkit.log('Failed to add emoji reaction :(',err);
-		}
+controller.hears(['^mad lib'],'direct_message,direct_mention,mention',function(bot, message) {
+	var listOfLibs = [];
+	listOfLibs[0] = ["The xxx xxx into the xxx.", "noun", "past tense verb", "place"];
+	
+	bot.startConversation(message, function(err, convo) {
+		convo.ask(listOfLibs[0][1] + '?', function(response, convo) {
+			convo.next();
+			convo.ask(listOfLibs[0][2] + '?', function(response2, convo) {
+				convo.next();
+				convo.ask(listOfLibs[0][3] + '?', function(response3, convo) {
+					convo.next();
+					var thisMadLib = listOfLibs[0][0];
+					var wordLocation = thisMadLib.indexOf("xxx");
+					thisMadLib = thisMadLib.substring(0,wordLocation) + response.text + " " + thisMadLib.substring(wordLocation + 4, thisMadLib.length);
+					wordLocation = thisMadLib.indexOf("xxx");
+					thisMadLib = thisMadLib.substring(0,wordLocation) + response2.text + " " + thisMadLib.substring(wordLocation + 4, thisMadLib.length);
+					wordLocation = thisMadLib.indexOf("xxx");
+					thisMadLib = thisMadLib.substring(0,wordLocation) + response3.text + thisMadLib.substring(wordLocation + 4, thisMadLib.length);
+					convo.say(thisMadLib);
+				});
+			});
+		});
 	});
 });
 
-
-controller.hears(['bud light', 'miller lite', 'blue moon', 'corona', 'miller light', 'budweiser', 'mgd'],'message_received,ambient,mention',function(bot, message) {
-	bot.api.reactions.add({
-		timestamp: message.ts,
-		channel: message.channel,
-		name: '-1',
-	},function(err, res) {
-		if (err) {
-			bot.botkit.log('Failed to add emoji reaction :(',err);
-		}
-	});
-});
 
 
 controller.hears(['^knock knock'],'direct_message,direct_mention,mention',function(bot, message) {
@@ -369,3 +369,28 @@ function ytQuery(message, query) {
     });
   }
 }
+
+controller.hears(['moon man', 'microbrew', 'hopalicious', 'pure hoppiness', 'ghost ship', 'fat squirrel', 'karben4', 'ale asylum', 'new glarus'],'message_received,ambient,mention',function(bot, message) {
+	bot.api.reactions.add({
+		timestamp: message.ts,
+		channel: message.channel,
+		name: '+1',
+	},function(err, res) {
+		if (err) {
+			bot.botkit.log('Failed to add emoji reaction :(',err);
+		}
+	});
+});
+
+
+controller.hears(['bud light', 'miller lite', 'blue moon', 'corona', 'miller light', 'budweiser', 'mgd'],'message_received,ambient,mention',function(bot, message) {
+	bot.api.reactions.add({
+		timestamp: message.ts,
+		channel: message.channel,
+		name: '-1',
+	},function(err, res) {
+		if (err) {
+			bot.botkit.log('Failed to add emoji reaction :(',err);
+		}
+	});
+});
