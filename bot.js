@@ -34,6 +34,8 @@ var bot = controller.spawn({
 
 
 controller.hears(['moon man', 'microbrew', 'hopalicious', 'pure hoppiness', 'ghost ship', 'fat squirrel', 'karben4', 'ale asylum', 'new glarus'],'message_received,ambient,mention',function(bot, message) {
+  console.log("########## HEARD GOOD BEER ##########");
+  
 	bot.api.reactions.add({
 		timestamp: message.ts,
 		channel: message.channel,
@@ -47,6 +49,8 @@ controller.hears(['moon man', 'microbrew', 'hopalicious', 'pure hoppiness', 'gho
 
 
 controller.hears(['bud light', 'miller lite', 'blue moon', 'corona', 'miller light', 'budweiser', 'mgd'],'message_received,ambient,mention',function(bot, message) {
+  console.log("########## HEARD BAD BEER ##########");
+  
 	bot.api.reactions.add({
 		timestamp: message.ts,
 		channel: message.channel,
@@ -265,6 +269,8 @@ function getRandomInt(min, max) {
 
 //this be the main search listener that delegates to other functions based on second "argument"
 controller.hears(['search (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+  console.log("########## HEARD SEARCH IMG ##########");
+  
   
 	var goodCommand = true; //set false if unable to parse
   var matches = message.text.match(/search (\S*)/i); //get the word immediately following "search"
@@ -286,7 +292,12 @@ controller.hears(['search (.*)'], 'direct_message,direct_mention,mention,ambient
   			case "img":
 				case "image":
 				case "images":
-					gImgQuery(message, query);
+  				var nsfw = false;
+					gImgQuery(message, query, nsfw);
+					break;
+				case "nsfw":
+				  var nsfw = true;
+					gImgQuery(message, query, nsfw);
 					break;
 				case "youtube":
 				case "yt":
@@ -324,11 +335,19 @@ function imageSearch(message, query) {
 
 
 //https://developers.google.com/custom-search/json-api/v1/reference/cse/list
-function gImgQuery(message, query) {
+function gImgQuery(message, query, nsfw) {
   if (query) {
     const CX = keys.gapi1.cx;
     const API_KEY = keys.gapi1.key;
-    customsearch.cse.list({ cx: CX, auth: API_KEY, q: query, searchType: "image", safe: "medium", imgSize: "medium" }, function(err, resp) {
+    
+    var safeLevel;
+    if(nsfw) {
+      safeLevel = "off";
+    } else {
+      safeLevel = "medium";  
+    }
+    
+    customsearch.cse.list({ cx: CX, auth: API_KEY, q: query, searchType: "image", safe: safeLevel, imgSize: "large" }, function(err, resp) {
       if (err) {
         console.log('An error occured', err);
         bot.reply(message, "Sorry, can't do that.");
@@ -336,9 +355,11 @@ function gImgQuery(message, query) {
       }
       if (resp.items && resp.items.length > 0) {
         bot.reply(message, resp.items[getRandomInt(0, (resp.items.length - 1))].link);
-        console.log(resp.items.length);
+        // console.log(resp.items.length);
         //console.log(resp.items[0].link);
         //bot.reply(message, resp.items[0].link);
+        
+        // console.log("Parameters are => CX: "+CX+", API_KEY: "+API_KEY+", query: "+query+", safe: "+safeLevel);
         return;
       } else {
         bot.reply(message, "Sorry, no results.");
