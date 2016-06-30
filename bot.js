@@ -4,6 +4,7 @@ if (!process.env.token) {
     console.log('Error: Specify token in environment');
     process.exit(1);
 }
+process.title = 'chuckbot';
 
 var Botkit = require('./node_modules/botkit/lib/Botkit.js');
 var cheerio = require('./node_modules/cheerio');
@@ -11,6 +12,7 @@ var request = require('./node_modules/request');
 var fs = require('fs');
 var os = require('os');
 
+var minimist = require('minimist');
 var keys = require('./keys.js');
 
 var google = require('googleapis');
@@ -20,6 +22,16 @@ var YouTube = require('youtube-node');
 var youTube = new YouTube();
 youTube.setKey(keys.gapi1.key);
 youTube.addParam('type', 'video');
+
+
+var mysql      = require('mysql');
+var connection = mysql.createConnection({
+    host     : keys.database.host,
+    user     : keys.database.user,
+  	password : keys.database.password,
+  	database : keys.database.database
+});
+
 
 
 var controller = Botkit.slackbot({
@@ -390,3 +402,51 @@ function ytQuery(message, query) {
     });
   }
 }
+
+
+controller.hears(['addname (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+  console.log("heard addname");
+  // var matches = message.text.match(/addname/i);
+  
+  var textPos = message.text.indexOf('addname') + 8;
+  var command = message.text.substring(textPos); //get everything after the "type" in the message, adding 1 to account for the space character following the type
+  console.log(command);
+  
+  // var args = minimist(process.argv.slice(2));
+  var args = minimist(command);
+  console.log(args);
+
+
+  /*
+  // var matches = message.text.match(/addname (\S*)/i); // get the word immediately following "addname"
+  console.log("matches below");
+  console.log(matches);
+  
+  var type = matches[1]; //select the right one from the resultant array
+  var positionAfterType = message.text.indexOf(type) + type.length + 1;
+  var query = message.text.substring(positionAfterType); //get everything after the "type" in the message, adding 1 to account for the space character following the type
+  */
+  /*
+  for (var i = 0, len = matches.length; i < len; i++) {
+    console.log(matches[i]);
+  }
+  */
+  // var array = string.split(',');
+});
+
+/*
+var sql = "INSERT INTO users (email, name, created, password_hash) " +
+"VALUES (?, ?,  NOW(), ?)";
+	var inserts = [data.email, data.name, hash];
+sql = mysql.format(sql, inserts);
+console.log(inserts);
+console.log(sql);
+
+connection.query(sql, function(err, result) {
+	if (err) throw err;
+
+	console.log(result);
+	res.sendFile(__dirname + '/www/dbtest.html')
+	res.end();
+});
+*/
