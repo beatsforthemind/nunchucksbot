@@ -6,14 +6,15 @@ if (!process.env.token) {
 }
 process.title = 'chuckbot';
 
-var Botkit = require('./node_modules/botkit/lib/Botkit.js');
-var cheerio = require('./node_modules/cheerio');
-var request = require('./node_modules/request');
+var Botkit = require(__dirname+'/node_modules/botkit/lib/Botkit.js');
+var cheerio = require(__dirname+'/node_modules/cheerio');
+var request = require(__dirname+'/node_modules/request');
 var fs = require('fs');
 var os = require('os');
 
 var minimist = require('minimist');
-var keys = require('./keys.js');
+var keys = require(__dirname+'/keys.js');
+var apiFlip = true;
 
 var google = require('googleapis');
 var customsearch = google.customsearch('v1');
@@ -32,11 +33,9 @@ var connection = mysql.createConnection({
   	database : keys.database.database
 });
 
-
-
 var controller = Botkit.slackbot({
   debug: true,
-  json_file_store: './dataDir'
+  json_file_store: __dirname+'/dataDir'
 });
 
 
@@ -349,8 +348,23 @@ function imageSearch(message, query) {
 //https://developers.google.com/custom-search/json-api/v1/reference/cse/list
 function gImgQuery(message, query, nsfw) {
   if (query) {
+    
+    /*    
     const CX = keys.gapi1.cx;
     const API_KEY = keys.gapi1.key;
+    */
+    
+    if(apiFlip) {
+      CX = keys.gapi1.cx;
+      API_KEY = keys.gapi1.key;
+      console.log('Used API 1');
+    } else {
+      CX = keys.gapi2.cx;
+      API_KEY = keys.gapi2.key;
+      console.log('Used API 2');
+    }
+    
+    apiFlip = !apiFlip;
     
     var safeLevel;
     if(nsfw) {
