@@ -12,9 +12,11 @@ var request = require(__dirname+'/node_modules/request');
 var fs = require('fs');
 var os = require('os');
 
+var util = require('util');
+
 var minimist = require('minimist');
 var keys = require(__dirname+'/keys.js');
-var apiFlip = true;
+var apiFlip = 0;
 
 var google = require('googleapis');
 var customsearch = google.customsearch('v1');
@@ -24,6 +26,7 @@ var youTube = new YouTube();
 youTube.setKey(keys.gapi1.key);
 youTube.addParam('type', 'video');
 
+var Bing = require('node-bing-api')({ accKey: keys.bing.key });
 
 var mysql      = require('mysql');
 var connection = mysql.createConnection({
@@ -140,9 +143,9 @@ controller.hears(['hello','^hi$'],'direct_message,direct_mention,mention',functi
 				var userNumber = message.user;
 				bot.api.users.info({user:userNumber}, function(err, response) {
 					if(err) {
-						bot.botkit.log("ERROR!!!!", err);
+						bot.botkit.log("ERROR", err);
 					} else {
-						//bot.botkit.log("SUCCESS!", response);
+						//bot.botkit.log("SUCCESS", response);
 						bot.reply(message,'Hello ' + response.user.name + '!');
 					}
 				});
@@ -167,6 +170,7 @@ controller.hears(['call me (.*)'],'direct_message,direct_mention,mention',functi
         });
     });
 });
+
 
 controller.hears(['what is my name','who am i'],'direct_message,direct_mention,mention',function(bot, message) {
 
@@ -237,7 +241,6 @@ function formatUptime(uptime) {
 }
 
 
-
 controller.on('user_channel_join',function(bot,message) {
 	var userNumber = message.user;
 	bot.api.users.info({user:userNumber}, function(err, response) {
@@ -248,6 +251,7 @@ controller.on('user_channel_join',function(bot,message) {
 		}
 	});
 });
+
 
 controller.on('user_channel_leave',function(bot,message) {
     bot.reply(message,'Goodbye, @' + message.user + '!');
@@ -278,17 +282,65 @@ function getRandomInt(min, max) {
 }
 
 
+function bingSafe(message, query) {
+  if (query) {
+    
+    Bing.images(query, {
+      market: 'en-US',
+      skip: 0,
+      top: 1,
+      adult: 'Medium',
+        imageFilters: {
+          size: 'Medium'
+        }
+      }, function(error, res, body) {
+      // console.log(util.inspect(body, {showHidden: false, depth: null}));
+      if(body && body.d && body.d.results && body.d.results[0] && body.d.results[0].MediaUrl) {
+        bot.reply(message, body.d.results[0].MediaUrl);
+      } else {
+        // TRY WITH GOOGLE
+        apiFlip++;
+        gImgQuery(message, query);
+      }
+    });
+    
+    console.log('##### RUNNING A SAFE BING #####');
+  }
+}
+
+function bingNsfw(message, query) {
+  if (query) {
+    
+    Bing.images(query, {
+      market: 'en-US',
+      skip: 0,
+      top: 1,
+      adult: 'Off',
+        imageFilters: {
+          size: 'Medium'
+        }
+      }, function(error, res, body) {
+      // console.log(util.inspect(body, {showHidden: false, depth: null}));
+      if(body && body.d && body.d.results && body.d.results[0] && body.d.results[0].MediaUrl) {
+        bot.reply(message, body.d.results[0].MediaUrl);
+      } else {
+        bot.reply(message, "BING BONG");
+      }
+    });
+    
+    console.log('##### RUNNING A NSFW BING #####');
+  }
+}
+
+
+
 //this be the main search listener that delegates to other functions based on second "argument"
 controller.hears(['search (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
-  console.log("########## HEARD SEARCH IMG ##########");
-  
-  
 	var goodCommand = true; //set false if unable to parse
   var matches = message.text.match(/search (\S*)/i); //get the word immediately following "search"
   
 	if(!matches && matches !== null) { //type wasn't found
 		goodCommand = false;
-	} else {
 	}
 	
 	if(goodCommand && typeof matches[1] != 'undefined') {
@@ -303,12 +355,11 @@ controller.hears(['search (.*)'], 'direct_message,direct_mention,mention,ambient
   			case "img":
 				case "image":
 				case "images":
-  				var nsfw = false;
-					gImgQuery(message, query, nsfw);
+				  gImgQuery(message, query);
+					// bingSafe(message, query);
 					break;
 				case "nsfw":
-				  var nsfw = true;
-					gImgQuery(message, query, nsfw);
+					bingNsfw(message, query);
 					break;
 				case "youtube":
 				case "yt":
@@ -323,72 +374,52 @@ controller.hears(['search (.*)'], 'direct_message,direct_mention,mention,ambient
 	if(goodCommand === false) { //some sort of problem, throw error message
 		// bot.reply(message,'There was a problem with your search.  Please try again.  _Hint - Use the following syntax: search $type_of_search $query_to_be_searched_');
 	}
+	
+	console.log("########## HEARD SEARCH ##########");
 });
 
-
-function imageSearch(message, query) {
-	//bot.reply(message, 'you requested an image search for ' + query); //obviously just for testing
-	var urlToRequest = 'https://www.google.com/search?tbm=isch&q=' + query;
-	request(urlToRequest, function (error, response, html) {
-	    if (!error && response.statusCode == 200) {
-			var $ = cheerio.load(html);
-			var primaryImg = $('img').first().attr('src');
-			request(primaryImg).pipe(fs.createWriteStream('image.jpg'));
-			var channelToPostTo = message.channel;
-			bot.api.files.upload({
-				file: fs.createReadStream('image.jpg'),
-				channels: channelToPostTo,
-				filename: 'image.jpg'
-			});
-		}
-	});
-}
-
-
 //https://developers.google.com/custom-search/json-api/v1/reference/cse/list
-function gImgQuery(message, query, nsfw) {
+function gImgQuery(message, query) {
   if (query) {
     
     /*    
     const CX = keys.gapi1.cx;
     const API_KEY = keys.gapi1.key;
-    */
-    
-    if(apiFlip) {
+    */ 
+
+    if(apiFlip === 2) {
+      // RUN BING SAFE
+      bingSafe(message, query);
+      apiFlip = 0;
+      return;
+    } else if(apiFlip === 1) {
+      // GOOGLE1
       CX = keys.gapi1.cx;
       API_KEY = keys.gapi1.key;
-      console.log('Used API 1');
-    } else {
+      apiFlip++;
+    } else if(apiFlip === 0) {
+      // RUN GOOGLE2
       CX = keys.gapi2.cx;
       API_KEY = keys.gapi2.key;
-      console.log('Used API 2');
+      apiFlip++;
     }
     
-    apiFlip = !apiFlip;
-    
-    var safeLevel;
-    if(nsfw) {
-      safeLevel = "off";
-    } else {
-      safeLevel = "medium";  
-    }
+    safeLevel = "medium";
     
     customsearch.cse.list({ cx: CX, auth: API_KEY, q: query, searchType: "image", safe: safeLevel, imgSize: "large" }, function(err, resp) {
       if (err) {
         console.log('An error occured', err);
-        bot.reply(message, "Sorry, can't do that.");
+        bot.reply(message, "SCROOGLED");
         return;
       }
       if (resp.items && resp.items.length > 0) {
         bot.reply(message, resp.items[getRandomInt(0, (resp.items.length - 1))].link);
-        // console.log(resp.items.length);
-        //console.log(resp.items[0].link);
-        //bot.reply(message, resp.items[0].link);
+        // bot.reply(message, resp.items[0].link);
         
         // console.log("Parameters are => CX: "+CX+", API_KEY: "+API_KEY+", query: "+query+", safe: "+safeLevel);
         return;
       } else {
-        bot.reply(message, "Sorry, no results.");
+        bot.reply(message, "SCROOGLED");
         return;   
       }
     });
