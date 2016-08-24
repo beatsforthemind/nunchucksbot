@@ -11,20 +11,20 @@ var cheerio = require(__dirname+'/node_modules/cheerio');
 var request = require(__dirname+'/node_modules/request');
 var fs = require('fs');
 var os = require('os');
-
+var http = require('http');
+var https = require('https');
+var parseString = require('xml2js').parseString;
 var util = require('util');
-
 var minimist = require('minimist');
 var keys = require(__dirname+'/keys.js');
-var apiFlip = 0;
-
 var google = require('googleapis');
 var customsearch = google.customsearch('v1');
-
 var YouTube = require('youtube-node');
 var youTube = new YouTube();
 youTube.setKey(keys.gapi1.key);
 youTube.addParam('type', 'video');
+
+var apiFlip = 0;
 
 var Bing = require('node-bing-api')({ accKey: keys.bing.key });
 
@@ -310,8 +310,8 @@ function bingSafe(message, query) {
 
 function bingNsfw(message, query) {
   if (query) {
-    
-    Bing.images(query, {
+    var dQuery = query+" gay";
+    Bing.images(dQuery, {
       market: 'en-US',
       skip: 0,
       top: 1,
@@ -324,7 +324,7 @@ function bingNsfw(message, query) {
       if(body && body.d && body.d.results && body.d.results[0] && body.d.results[0].MediaUrl) {
         bot.reply(message, body.d.results[0].MediaUrl);
       } else {
-        bot.reply(message, "BING BONG");
+        bot.reply(message, "WHAT'S WRONG WITH YOU");
       }
     });
     
@@ -447,6 +447,113 @@ function ytQuery(message, query) {
     });
   }
 }
+
+
+
+
+
+
+controller.hears(['whatis (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+	var goodCommand = true; //set false if unable to parse
+  var matches = message.text.match(/whatis (\S*)/i); //get the word immediately following "search"
+  
+	if(!matches && matches !== null) { //type wasn't found
+		goodCommand = false;
+	}
+	
+	if(goodCommand && typeof matches[1] != 'undefined') {
+		var word = matches[1];
+		if(!word) {
+			goodCommand = false;
+		} else {
+      dictGet(message, word);
+		}
+	}
+	
+	if(goodCommand === false) {
+	}
+	
+	console.log("########## WORD ##########");
+});
+
+
+
+function dictGet(message, word) {
+  
+  var options = {
+    host: 'owlbot.info',
+    port: 443,
+    path: '/api/v1/dictionary/'+word+'?format=json',
+    headers: {
+      accept: '*/*'
+    }
+  };
+  
+  var req = https.get(options, function(res) {
+    // console.log('STATUS: ' + res.statusCode);
+    // console.log('HEADERS: ' + JSON.stringify(res.headers));
+    res.setEncoding('utf8');
+    
+    var resData = "";
+    res.on('data', function (chunk) {
+      resData += chunk;
+    });
+    
+    res.on('end', function () {
+      // console.log(req.data);
+      // console.log(resData);
+      
+      var toText = new Array();
+      resObject = JSON.parse(resData);
+      
+      if(resObject[0] !== null) {
+        if(resObject && resObject[0]) {
+          bot.reply(message, word.toUpperCase()+": "+resObject[0].defenition);  
+          // bot.reply(message, util.inspect(resObject[0].defenition, {showHidden: false, depth: null}));  
+        } else {
+          bot.reply(message, "Haven't heard of that");
+        }
+      }
+      /*
+      if(resObject && resObject[0]) {
+        bot.reply(message, util.inspect(resObject[0].defenition, {showHidden: false, depth: null}));  
+      } else {
+        bot.reply(message, "I don't know.");
+      }
+      */
+      
+      
+      // bot.reply(message, "");
+      
+      /*
+      parseString(resData, function (err, result) {
+        // console.log(result);
+        // console.log( util.inspect(result, {showHidden: false, depth: null}) );
+        // bot.reply(message, util.inspect(result, {showHidden: false, depth: null}));
+        
+        // bot.reply(message, util.inspect(result.entry_list.entry.ew, {showHidden: false, depth: null}));
+        // bot.reply(message, result.entry_list.entry);
+        // console.log( JSON.stringify(result.entry_list.entry) );
+        
+        // var jsonResult = JSON.stringify(result);
+        var toText = new Array();
+        bot.reply(message, result.entry_list.entry[0].def );
+      });
+      */
+
+    });    
+  });
+
+  req.on('error', function(e) {
+    console.log('request error: ' + e.message);
+  });
+  
+}
+
+
+
+
+
 
 
 controller.hears(['addname (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
