@@ -310,8 +310,7 @@ function bingSafe(message, query) {
 
 function bingNsfw(message, query) {
   if (query) {
-    var dQuery = query+" gay";
-    Bing.images(dQuery, {
+    Bing.images(query, {
       market: 'en-US',
       skip: 0,
       top: 1,
