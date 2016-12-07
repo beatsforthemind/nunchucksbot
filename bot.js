@@ -1,5 +1,7 @@
 // token=<MY TOKEN> node bot.js
 
+
+
 if (!process.env.token) {
     console.log('Error: Specify token in environment');
     process.exit(1);
@@ -601,3 +603,24 @@ connection.query(sql, function(err, result) {
 	res.end();
 });
 */
+
+controller.hears(['quesignifica (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+  	var matches = message.text.match(/quesignifica (\S*)/i); //get the word immediately following "search"
+  
+	request('http://www.asihablamos.com/word/palabra/' + matches[0] + '.php', function (error, response, html) {
+		if (!error && response.statusCode == 200) {
+			var $ = cheerio.load(html);
+			$('.pais').first(function(i, element){
+				var country = $(this).children('h2').first().html();
+				var definition = $(this).children('.definicion').children('div').first().html();
+				var example = $(this).find('.ejemplo').html();
+				var result = {};
+				result.country = country;
+				result.definition = definition;
+				result.example = example;
+				bot.reply(message, matches[0].toUpperCase()+": " + result.definition + " - " + result.example);  
+			});
+		}
+	});
+});
+
