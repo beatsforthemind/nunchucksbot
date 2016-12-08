@@ -604,23 +604,31 @@ connection.query(sql, function(err, result) {
 });
 */
 
-controller.hears(['quesignifica (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
-  	var matches = message.text.match(/quesignifica (\S*)/i); //get the word immediately following "search"
+controller.hears(['quesignifica (.*)', 'quésignifica (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    var matches = message.text.match(/qu[eé]significa (\S*)/i); //get the word immediately following "search"
   
-	request('http://www.asihablamos.com/word/palabra/' + matches[0] + '.php', function (error, response, html) {
+	request('http://www.asihablamos.com/word/palabra/' + matches[1] + '.php', function (error, response, html) {
 		if (!error && response.statusCode == 200) {
 			var $ = cheerio.load(html);
-			$('.pais').first(function(i, element){
-				var country = $(this).children('h2').first().html();
-				var definition = $(this).children('.definicion').children('div').first().html();
-				var example = $(this).find('.ejemplo').html();
-				var result = {};
-				result.country = country;
-				result.definition = definition;
-				result.example = example;
-				bot.reply(message, matches[0].toUpperCase()+": " + result.definition + " - " + result.example);  
-			});
-		}
+      if($('.pais').length>0) {
+        //var firstResult = $('.pais').first()[0];
+        //$('.pais').first(function(i, element){
+          var country = $('.pais').first().children('h2').first().text();
+          var definition = $('.definicion').first().children('div').first().next().text();
+          var example = $('.definicion').first().find('.ejemplo').text();
+          var result = {};
+          result.country = country.trim();
+          result.definition = definition.trim();
+          result.example = example.trim();
+          bot.reply(message, matches[1].toUpperCase()+ " " + result.country + ": " + result.definition + " \n\ne.g. " + result.example);  
+			  //});
+      } else {
+        bot.reply(message, "No puedo encontrar esa palabra.");
+      }
+			
+		} else {
+      bot.reply(message, "¡Los tubos están caído!");
+    }
 	});
 });
 
