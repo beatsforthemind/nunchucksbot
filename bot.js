@@ -311,8 +311,31 @@ function bingSafe(message, query) {
 }
 
 function bingNsfw(message, query) {
-  if (query) {
-    Bing.images(query, {
+	var diceRoll = getRandomInt(0, 4);
+	var options = {
+		url: 'https://api.cognitive.microsoft.com/bing/v5.0/images/search?safeSearch=Off&count=5&q=' + query + '&offset=' + diceRoll,
+		headers: {
+			'Ocp-Apim-Subscription-Key': keys.bing.key
+		}
+	};
+	if (query) {
+		request(options, function (error, response, info) {
+			infoObj = JSON.parse(info);
+			fs.writeFileSync("nodelog.txt", infoObj);
+			if(infoObj.value) {
+				var firstResult = infoObj.value[0];
+				var firstURL = firstResult.contentUrl;
+				bot.reply(message, firstURL);
+			} else {
+				bot.reply(message, "Ew, you sick bastard. Your mom wouldn't even search that!");
+			}
+			
+			
+			//bot.reply(message, html);
+		});
+	}
+	//this is old and doesn't work, but retaining it until the new one is fully tested and good to go
+    /*Bing.images(query, {
       market: 'en-US',
       skip: 0,
       top: 1,
@@ -327,10 +350,10 @@ function bingNsfw(message, query) {
       } else {
         bot.reply(message, "WHAT'S WRONG WITH YOU");
       }
-    });
+    });*/
     
     console.log('##### RUNNING A NSFW BING #####');
-  }
+  
 }
 
 
