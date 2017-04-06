@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/beatsforthemind/nunchucksbot#readme",
   "dependencies": {
+    "beeradvocate-api": "0.0.1",
     "botkit": "^0.2.0",
     "cheerio": "^0.20.0",
     "fs": "0.0.2",

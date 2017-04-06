@@ -18,6 +18,7 @@ var https = require('https');
 var parseString = require('xml2js').parseString;
 var util = require('util');
 var minimist = require('minimist');
+var ba = require('beeradvocate-api');
 var keys = require(__dirname+'/keys.js');
 var google = require('googleapis');
 var customsearch = google.customsearch('v1');
@@ -48,7 +49,7 @@ var bot = controller.spawn({
   token: process.env.token
 }).startRTM();
 
-
+/*
 controller.hears(['moon man', 'microbrew', 'hopalicious', 'pure hoppiness', 'ghost ship', 'fat squirrel', 'karben4', 'ale asylum', 'new glarus'],'message_received,ambient,mention',function(bot, message) {
   console.log("########## HEARD GOOD BEER ##########");
   
@@ -62,8 +63,6 @@ controller.hears(['moon man', 'microbrew', 'hopalicious', 'pure hoppiness', 'gho
 		}
 	});
 });
-
-
 controller.hears(['bud light', 'miller lite', 'blue moon', 'corona', 'miller light', 'budweiser', 'mgd'],'message_received,ambient,mention',function(bot, message) {
   console.log("########## HEARD BAD BEER ##########");
   
@@ -77,6 +76,7 @@ controller.hears(['bud light', 'miller lite', 'blue moon', 'corona', 'miller lig
 		}
 	});
 });
+*/
 
 
 controller.hears(['^knock knock'],'direct_message,direct_mention,mention',function(bot, message) {
@@ -310,6 +310,32 @@ function bingSafe(message, query) {
   }
 }
 
+function searchBeer(message, query) {
+  if (query) {    
+    ba.beerSearch(query, function(beers) {
+	    if(beers) {
+		  	console.log(beers);
+		  	var beerArr = JSON.parse(beers);
+		  	if(beerArr[0]) {
+			  	console.log(beerArr[0]);
+			  	var baUrlBase = "https://www.beeradvocate.com";
+			  	if(beerArr[0].brewery_name && beerArr[0].beer_name && beerArr[0].beer_url) {
+				  	bot.reply(message, beerArr[0].brewery_name+": "+beerArr[0].beer_name+" "+baUrlBase+beerArr[0].beer_url);
+			  	} else {
+				  	bot.reply(message, query+": NOT FOUND");
+			  	}
+		  	} else {
+			  	bot.reply(message, query+": NOT FOUND");
+		  	}
+	    } else {
+		    bot.reply(message, query+": NOT FOUND");
+	    }
+		});
+    console.log('##### RUNNING A BEER SEARCH #####');
+  }
+}
+
+
 function bingNsfw(message, query) {
 	var diceRoll = getRandomInt(0, 4);
 	var options = {
@@ -344,11 +370,18 @@ function bingNsfw(message, query) {
           size: 'Medium'
         }
       }, function(error, res, body) {
-      // console.log(util.inspect(body, {showHidden: false, depth: null}));
+	      
+	    console.log(util.inspect(res, {showHidden: false, depth: null}));  
+      console.log(util.inspect(body, {showHidden: false, depth: null}));
+      
+      // bot.reply(message, util.inspect(res, {showHidden: false, depth: null}) );
+      // bot.reply(message, util.inspect(body, {showHidden: false, depth: null}) );
+      
       if(body && body.d && body.d.results && body.d.results[0] && body.d.results[0].MediaUrl) {
-        bot.reply(message, body.d.results[0].MediaUrl);
+	      bot.reply(message, body);
+        // bot.reply(message, body.d.results[0].MediaUrl);
       } else {
-        bot.reply(message, "WHAT'S WRONG WITH YOU");
+        // bot.reply(message, "WHAT'S WRONG WITH YOU");
       }
     });*/
     
@@ -389,6 +422,9 @@ controller.hears(['search (.*)'], 'direct_message,direct_mention,mention,ambient
 				case "yt":
 				case "vid":
 				  ytQuery(message, query);
+					break;
+				case "beer":
+					searchBeer(message, query);
 					break;
 				// default:
 			}
@@ -573,9 +609,6 @@ function dictGet(message, word) {
   });
   
 }
-
-
-
 
 
 
