@@ -29,8 +29,6 @@ youTube.addParam('type', 'video');
 
 var apiFlip = 0;
 
-var Bing = require('node-bing-api')({ accKey: keys.bing.key });
-
 var mysql      = require('mysql');
 var connection = mysql.createConnection({
     host     : keys.database.host,
@@ -347,8 +345,8 @@ function bingNsfw(message, query) {
 	if (query) {
 		request(options, function (error, response, info) {
 			infoObj = JSON.parse(info);
-			fs.writeFileSync("nodelog.txt", infoObj);
-			if(infoObj.value) {
+			//fs.writeFileSync("nodelog.txt", info);
+			if(infoObj.value.length > 0) {
 				var firstResult = infoObj.value[0];
 				var firstURL = firstResult.contentUrl;
 				bot.reply(message, firstURL);
@@ -357,33 +355,8 @@ function bingNsfw(message, query) {
 			}
 			
 			
-			//bot.reply(message, html);
 		});
 	}
-	//this is old and doesn't work, but retaining it until the new one is fully tested and good to go
-    /*Bing.images(query, {
-      market: 'en-US',
-      skip: 0,
-      top: 1,
-      adult: 'Off',
-        imageFilters: {
-          size: 'Medium'
-        }
-      }, function(error, res, body) {
-	      
-	    console.log(util.inspect(res, {showHidden: false, depth: null}));  
-      console.log(util.inspect(body, {showHidden: false, depth: null}));
-      
-      // bot.reply(message, util.inspect(res, {showHidden: false, depth: null}) );
-      // bot.reply(message, util.inspect(body, {showHidden: false, depth: null}) );
-      
-      if(body && body.d && body.d.results && body.d.results[0] && body.d.results[0].MediaUrl) {
-	      bot.reply(message, body);
-        // bot.reply(message, body.d.results[0].MediaUrl);
-      } else {
-        // bot.reply(message, "WHAT'S WRONG WITH YOU");
-      }
-    });*/
     
     console.log('##### RUNNING A NSFW BING #####');
   
