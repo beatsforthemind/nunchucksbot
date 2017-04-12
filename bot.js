@@ -282,32 +282,6 @@ function getRandomInt(min, max) {
 }
 
 
-function bingSafe(message, query) {
-  if (query) {
-    
-    Bing.images(query, {
-      market: 'en-US',
-      skip: 0,
-      top: 1,
-      adult: 'Medium',
-        imageFilters: {
-          size: 'Medium'
-        }
-      }, function(error, res, body) {
-      // console.log(util.inspect(body, {showHidden: false, depth: null}));
-      if(body && body.d && body.d.results && body.d.results[0] && body.d.results[0].MediaUrl) {
-        bot.reply(message, body.d.results[0].MediaUrl);
-      } else {
-        // TRY WITH GOOGLE
-        apiFlip++;
-        gImgQuery(message, query);
-      }
-    });
-    
-    console.log('##### RUNNING A SAFE BING #####');
-  }
-}
-
 function searchBeer(message, query) {
   if (query) {    
     ba.beerSearch(query, function(beers) {
@@ -420,16 +394,11 @@ function gImgQuery(message, query) {
     const API_KEY = keys.gapi1.key;
     */ 
 
-    if(apiFlip === 2) {
-      // RUN BING SAFE
-      bingSafe(message, query);
-      apiFlip = 0;
-      return;
-    } else if(apiFlip === 1) {
+    if(apiFlip === 1) {
       // GOOGLE1
       CX = keys.gapi1.cx;
       API_KEY = keys.gapi1.key;
-      apiFlip++;
+      apiFlip = 0;
     } else if(apiFlip === 0) {
       // RUN GOOGLE2
       CX = keys.gapi2.cx;
