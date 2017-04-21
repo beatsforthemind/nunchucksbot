@@ -309,30 +309,36 @@ function searchBeer(message, query) {
 
 
 function bingNsfw(message, query) {
-	var diceRoll = getRandomInt(0, 4);
-	var options = {
-		url: 'https://api.cognitive.microsoft.com/bing/v5.0/images/search?safeSearch=Off&count=5&q=' + query + '&offset=' + diceRoll,
-		headers: {
-			'Ocp-Apim-Subscription-Key': keys.bing.key
-		}
-	};
-	if (query) {
-		request(options, function (error, response, info) {
-			infoObj = JSON.parse(info);
-			//fs.writeFileSync("nodelog.txt", info);
-			if(infoObj.value.length > 0) {
-				var firstResult = infoObj.value[0];
-				var firstURL = firstResult.contentUrl;
-				bot.reply(message, firstURL);
-			} else {
-				bot.reply(message, "Ew, you sick bastard. Your mom wouldn't even search that!");
+	if(message.channel=='C0R2JTT7F') {
+		var diceRoll = getRandomInt(0, 4);
+		var options = {
+			url: 'https://api.cognitive.microsoft.com/bing/v5.0/images/search?safeSearch=Off&count=5&q=' + query + '&offset=' + diceRoll,
+			headers: {
+				'Ocp-Apim-Subscription-Key': keys.bing.key
 			}
-			
-			
-		});
+		};
+		if (query) {
+			request(options, function (error, response, info) {
+				infoObj = JSON.parse(info);
+				//fs.writeFileSync("nodelog.txt", info);
+				if(infoObj.value.length > 0) {
+					var firstResult = infoObj.value[0];
+					var firstURL = firstResult.contentUrl;
+					bot.reply(message, firstURL);
+				} else {
+					bot.reply(message, "Ew, you sick bastard. Your mom wouldn't even search that!");
+				}
+				
+				
+			});
+		}
+		
+		console.log('##### RUNNING A NSFW BING #####');
+	} else {
+		bot.reply(message, "This is a SFW channel, brosephiroth. Take that shit to #yolo!");
 	}
-    
-    console.log('##### RUNNING A NSFW BING #####');
+
+	
   
 }
 
