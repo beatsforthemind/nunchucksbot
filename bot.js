@@ -379,6 +379,8 @@ controller.hears(['search (.*)'], 'direct_message,direct_mention,mention,ambient
 				case "beer":
 					searchBeer(message, query);
 					break;
+				case "value":
+					valueQuery(message, query);
 				// default:
 			}
 		}
@@ -456,7 +458,119 @@ function ytQuery(message, query) {
   }
 }
 
+function valueQuery(message, query) {
+	query = query.toLowerCase();
+	if (query == "btc" || query == "bitcoin" || query == "currency btc" || query == "currency bitcoin") { //https://bitcoincharts.com/about/markets-api/
+		var options = {
+			host: 'api.bitcoincharts.com',
+			port: 443,
+			path: '/v1/markets.json',
+			headers: {
+				accept: '*/*'
+			}
+		};
+		
+		var req = https.get(options, function(res) {
+			// console.log('STATUS: ' + res.statusCode);
+			// console.log('HEADERS: ' + JSON.stringify(res.headers));
+			res.setEncoding('utf8');
+			
+			var resData = "";
+			res.on('data', function (chunk) {
+				resData += chunk;
+			});
+			
+			res.on('end', function () {
+			// console.log(req.data);
+			// console.log(resData);
+			
+			var values = JSON.parse(resData);
+			if(values !== null) {
+				var bitcoinValueObject = values.filter(function(el) {
+					return el.symbol === "coinbaseUSD";
+				});
+				var bitcoinValueText = bitcoinValueObject[0].avg;
+				bot.reply(message, "1 BTC = $" + Number(bitcoinValueText).toFixed(2));  
+			} else {
+				console.log("No values returned");
+			}
 
+
+			});    
+		});
+
+		req.on('error', function(e) {
+			console.log('request error: ' + e.message);
+		});
+		
+	} else if(query.startsWith("stock") || query.startsWith("nyse") || query.startsWith("nasdaq")) { //http://dev.markitondemand.com/MODApis/
+		var queryArray = query.split(" ");
+		var stock = String(queryArray[1]).trim();
+			var options = {
+				host: 'dev.markitondemand.com',
+				port: 80,
+				path: '/MODApis/Api/v2/Quote/json?symbol=' + stock,
+				headers: {
+					accept: '*/*'
+				}
+			};
+			
+			var req = http.get(options, function(res) {
+				res.setEncoding('utf8');
+				
+				var resData = "";
+				res.on('data', function (chunk) {
+					resData += chunk;
+				});
+				
+				res.on('end', function () {
+				// console.log(req.data);
+				// console.log(resData);
+				
+				var values = JSON.parse(resData);
+				
+				if(values !== null) {
+					bot.reply(message, values.Name + " (" + values.Symbol + "): $" + Number(values.LastPrice).toFixed(2));  
+				} else {
+					console.log("No values returned");
+				}
+			});
+		});
+	} else if(query.startsWith("currency") || query.startsWith("cur") || query.startsWith("curr") || query.startsWith("forex")) {
+		var queryArray = query.split(" ");
+		var currency = String(queryArray[1]).trim().toUpperCase();
+		var options = {
+				host: 'webrates.truefx.com',
+				port: 80,
+				path: '/rates/connect.html?f=csv&c=' + currency + '/USD',
+				headers: {
+					accept: '*/*'
+				}
+			};
+			
+			var req = http.get(options, function(res) {
+				res.setEncoding('utf8');
+				
+				var resData = "";
+				res.on('data', function (chunk) {
+					resData += chunk;
+				});
+				
+				res.on('end', function () {
+				// console.log(req.data);
+				// console.log(resData);
+				
+				var values = resData.split(",");
+
+				if(values !== null && values.length < 11 && values.length > 0) {
+					bot.reply(message, values[0] + ": $" + values[8]);  
+				} else {
+					console.log("No values returned");
+				}
+			});
+		});
+	}
+}
 
 
 
@@ -522,32 +636,7 @@ function dictGet(message, word) {
           bot.reply(message, "Haven't heard of that");
         }
       }
-      /*
-      if(resObject && resObject[0]) {
-        bot.reply(message, util.inspect(resObject[0].defenition, {showHidden: false, depth: null}));  
-      } else {
-        bot.reply(message, "I don't know.");
-      }
-      */
-      
-      
-      // bot.reply(message, "");
-      
-      /*
-      parseString(resData, function (err, result) {
-        // console.log(result);
-        // console.log( util.inspect(result, {showHidden: false, depth: null}) );
-        // bot.reply(message, util.inspect(result, {showHidden: false, depth: null}));
-        
-        // bot.reply(message, util.inspect(result.entry_list.entry.ew, {showHidden: false, depth: null}));
-        // bot.reply(message, result.entry_list.entry);
-        // console.log( JSON.stringify(result.entry_list.entry) );
-        
-        // var jsonResult = JSON.stringify(result);
-        var toText = new Array();
-        bot.reply(message, result.entry_list.entry[0].def );
-      });
-      */
+
 
     });    
   });
