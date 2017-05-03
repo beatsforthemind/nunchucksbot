@@ -490,7 +490,7 @@ function valueQuery(message, query) {
 					return el.symbol === "coinbaseUSD";
 				});
 				var bitcoinValueText = bitcoinValueObject[0].avg;
-				bot.reply(message, "1 BTC = $" + Number(bitcoinValueText).toFixed(2));  
+				bot.reply(message, "BTC/USD: $" + Number(bitcoinValueText).toFixed(5));  
 			} else {
 				console.log("No values returned");
 			}
@@ -532,10 +532,16 @@ function valueQuery(message, query) {
 				if(values !== null) {
 					bot.reply(message, values.Name + " (" + values.Symbol + "): $" + Number(values.LastPrice).toFixed(2));  
 				} else {
-					console.log("No values returned");
+					bot.reply(message, "Can't find that stock.  Are you sure you have the right symbol?");
 				}
 			});
 		});
+	} else if(query == "currency usd" || query == "currency dollar" || currency == "currency dollars") {
+		bot.reply(message, "USD/USD: $1.0000. Duh.");
+	} else if(query == "currency stanley nickles" || query == "currency stanley nickels" || query == "currency schrute bucks") {
+		bot.reply(message, "Stanley Nickels/Schrute Bucks: Equal to the ratio of unicorns to leprechauns");
+	} else if(query == "currency pickles nickles" || query == "currency pickles nickels" || query == "currency pickles' nickels" || query == "currency pickle's nickels" || query == "currency pickles' nickles" || query == "currency pickle's nickles") {
+		bot.reply(message, "Don't you remember being a little kids, when your teeths would fall out and grow back and you would get the old one under the pillow so the ancient Norse god Ortha the tooths collector would come and give you a Pickle's Nickel?");
 	} else if(query.startsWith("currency") || query.startsWith("cur") || query.startsWith("curr") || query.startsWith("forex")) {
 		var queryArray = query.split(" ");
 		var currency = String(queryArray[1]).trim().toUpperCase();
@@ -562,10 +568,10 @@ function valueQuery(message, query) {
 				
 				var values = resData.split(",");
 
-				if(values !== null && values.length < 11 && values.length > 0) {
+				if(values !== null && values.length < 11 && values.length > 1) {
 					bot.reply(message, values[0] + ": $" + values[8]);  
 				} else {
-					console.log("No values returned");
+					bot.reply(message, ":money_mouth_face:");
 				}
 			});
 		});
