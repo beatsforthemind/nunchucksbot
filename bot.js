@@ -47,35 +47,6 @@ var bot = controller.spawn({
   token: process.env.token
 }).startRTM();
 
-/*
-controller.hears(['moon man', 'microbrew', 'hopalicious', 'pure hoppiness', 'ghost ship', 'fat squirrel', 'karben4', 'ale asylum', 'new glarus'],'message_received,ambient,mention',function(bot, message) {
-  console.log("########## HEARD GOOD BEER ##########");
-  
-	bot.api.reactions.add({
-		timestamp: message.ts,
-		channel: message.channel,
-		name: '+1',
-	},function(err, res) {
-		if (err) {
-			bot.botkit.log('Failed to add emoji reaction :(',err);
-		}
-	});
-});
-controller.hears(['bud light', 'miller lite', 'blue moon', 'corona', 'miller light', 'budweiser', 'mgd'],'message_received,ambient,mention',function(bot, message) {
-  console.log("########## HEARD BAD BEER ##########");
-  
-	bot.api.reactions.add({
-		timestamp: message.ts,
-		channel: message.channel,
-		name: '-1',
-	},function(err, res) {
-		if (err) {
-			bot.botkit.log('Failed to add emoji reaction :(',err);
-		}
-	});
-});
-*/
-
 
 controller.hears(['^knock knock'],'direct_message,direct_mention,mention',function(bot, message) {
 	bot.startConversation(message, function(err, convo) {
@@ -669,39 +640,10 @@ controller.hears(['addname (.*)'], 'direct_message,direct_mention,mention,ambien
   console.log(args);
 
 
-  /*
-  // var matches = message.text.match(/addname (\S*)/i); // get the word immediately following "addname"
-  console.log("matches below");
-  console.log(matches);
-  
-  var type = matches[1]; //select the right one from the resultant array
-  var positionAfterType = message.text.indexOf(type) + type.length + 1;
-  var query = message.text.substring(positionAfterType); //get everything after the "type" in the message, adding 1 to account for the space character following the type
-  */
-  /*
-  for (var i = 0, len = matches.length; i < len; i++) {
-    console.log(matches[i]);
-  }
-  */
-  // var array = string.split(',');
+
 });
 
-/*
-var sql = "INSERT INTO users (email, name, created, password_hash) " +
-"VALUES (?, ?,  NOW(), ?)";
-	var inserts = [data.email, data.name, hash];
-sql = mysql.format(sql, inserts);
-console.log(inserts);
-console.log(sql);
 
-connection.query(sql, function(err, result) {
-	if (err) throw err;
-
-	console.log(result);
-	res.sendFile(__dirname + '/www/dbtest.html')
-	res.end();
-});
-*/
 
 controller.hears(['quesignifica (.*)', 'quésignifica (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
     var matches = message.text.match(/qu[eé]significa (\S*)/i); //get the word immediately following "search"
