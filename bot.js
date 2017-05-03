@@ -499,8 +499,8 @@ function valueQuery(message, query) {
 				// console.log(resData);
 				
 				var values = JSON.parse(resData);
-				
-				if(values !== null) {
+
+				if(values !== null && values !== undefined && !values.Message) {
 					bot.reply(message, values.Name + " (" + values.Symbol + "): $" + Number(values.LastPrice).toFixed(2));  
 				} else {
 					bot.reply(message, "Can't find that stock.  Are you sure you have the right symbol?");
