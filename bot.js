@@ -18,6 +18,8 @@ var https = require('https');
 var parseString = require('xml2js').parseString;
 var util = require('util');
 var minimist = require('minimist');
+var child = require('child_process');
+var spawn = require('child_process').spawn;
 var ba = require('beeradvocate-api');
 var keys = require(__dirname+'/keys.js');
 var google = require('googleapis');
@@ -187,13 +189,19 @@ controller.hears(['uptime','identify yourself','who are you','what is your name'
 
     var hostname = os.hostname();
     var uptime = formatUptime(process.uptime());
-
-	revision = require('child_process')
-		.execSync('git rev-parse HEAD')
-		.toString().trim();
+		var revision = child.execSync('git rev-parse HEAD').toString().trim();
 
     bot.reply(message,':robot_face: I am a bot named <@' + bot.identity.name + '>. I have been running for ' + uptime + ' on ' + hostname + '. My current git revision is ' + revision);
 
+});
+
+controller.hears(['update yourself'],'direct_message,direct_mention,mention',function(bot, message) {
+	
+	// child.execSync('sh ./start.sh');
+	// spawn('sh', ['./start.sh']);
+	var whoami = child.execSync('whoami').toString().trim();
+	bot.reply(message, 'I AM: '+whoami);
+	
 });
 
 
