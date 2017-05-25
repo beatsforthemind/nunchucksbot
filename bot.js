@@ -518,6 +518,46 @@ function valueQuery(message, query) {
 			console.log('request error: ' + e.message);
 		});
 		
+	} else if(query == "gnt" || query == "golem" || query == "currency gnt" || query == "currency golem") {
+		var options = {
+			host: 'min-api.cryptocompare.com',
+			port: 443,
+			path: '/data/price?fsym=GNT&tsyms=USD',
+			headers: {
+				accept: '*/*'
+			}
+		};
+		
+		var req = https.get(options, function(res) {
+			// console.log('STATUS: ' + res.statusCode);
+			// console.log('HEADERS: ' + JSON.stringify(res.headers));
+			res.setEncoding('utf8');
+			
+			var resData = "";
+			res.on('data', function (chunk) {
+				resData += chunk;
+			});
+			
+			res.on('end', function () {
+			// console.log(req.data);
+			// console.log(resData);
+			
+			var values = JSON.parse(resData);
+			if(values !== null) {
+				var ethValueText = values.USD;
+				bot.reply(message, "GNT/USD: $" + Number(ethValueText));  
+			} else {
+				console.log("No values returned");
+			}
+
+
+			});    
+		});
+
+		req.on('error', function(e) {
+			console.log('request error: ' + e.message);
+		});
+		
 	} else if(query.startsWith("stock") || query.startsWith("nyse") || query.startsWith("nasdaq")) { //http://dev.markitondemand.com/MODApis
 		var queryArray = query.split(" ");
 		var stock = String(queryArray[1]).trim();
