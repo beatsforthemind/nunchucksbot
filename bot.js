@@ -526,6 +526,86 @@ function valueQuery(message, query) {
 			console.log('request error: ' + e.message);
 		});
 		
+	} else if (query == "sc" || query == "sia" || query == "currency sc" || query == "currency sia") {
+		var options = {
+			host: 'min-api.cryptocompare.com',
+			port: 443,
+			path: '/data/price?fsym=SC&tsyms=USD',
+			headers: {
+				accept: '*/*'
+			}
+		};
+
+		var req = https.get(options, function (res) {
+			// console.log('STATUS: ' + res.statusCode);
+			// console.log('HEADERS: ' + JSON.stringify(res.headers));
+			res.setEncoding('utf8');
+
+			var resData = "";
+			res.on('data', function (chunk) {
+				resData += chunk;
+			});
+
+			res.on('end', function () {
+				// console.log(req.data);
+				// console.log(resData);
+
+				var values = JSON.parse(resData);
+				if (values !== null) {
+					var scValueText = values.USD;
+					bot.reply(message, "SC/USD: $" + Number(scValueText));
+				} else {
+					console.log("No values returned");
+				}
+
+
+			});
+		});
+
+		req.on('error', function (e) {
+			console.log('request error: ' + e.message);
+		});
+
+	} else if (query == "fct" || query == "factom" || query == "currency fct" || query == "currency factom") {
+		var options = {
+			host: 'min-api.cryptocompare.com',
+			port: 443,
+			path: '/data/price?fsym=FCT&tsyms=USD',
+			headers: {
+				accept: '*/*'
+			}
+		};
+
+		var req = https.get(options, function (res) {
+			// console.log('STATUS: ' + res.statusCode);
+			// console.log('HEADERS: ' + JSON.stringify(res.headers));
+			res.setEncoding('utf8');
+
+			var resData = "";
+			res.on('data', function (chunk) {
+				resData += chunk;
+			});
+
+			res.on('end', function () {
+				// console.log(req.data);
+				// console.log(resData);
+
+				var values = JSON.parse(resData);
+				if (values !== null) {
+					var fctValueText = values.USD;
+					bot.reply(message, "FCT/USD: $" + Number(fctValueText));
+				} else {
+					console.log("No values returned");
+				}
+
+
+			});
+		});
+
+		req.on('error', function (e) {
+			console.log('request error: ' + e.message);
+		});
+
 	} else if(query == "gnt" || query == "golem" || query == "currency gnt" || query == "currency golem") {
 		var options = {
 			host: 'min-api.cryptocompare.com',
