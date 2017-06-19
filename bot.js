@@ -718,6 +718,49 @@ function valueQuery(message, query) {
 				}
 			});
 		});
+	} else {
+		query = query.toUpperCase();
+		if(query.indexOf(" ") > -1) { //if there are spaces, shit will break
+			return;
+		}
+		var options = {
+			host: 'min-api.cryptocompare.com',
+			port: 443,
+			path: '/data/price?fsym=' + query + '&tsyms=USD',
+			headers: {
+				accept: '*/*'
+			}
+		};
+
+		var req = https.get(options, function (res) {
+			// console.log('STATUS: ' + res.statusCode);
+			// console.log('HEADERS: ' + JSON.stringify(res.headers));
+			res.setEncoding('utf8');
+
+			var resData = "";
+			res.on('data', function (chunk) {
+				resData += chunk;
+			});
+
+			res.on('end', function () {
+				// console.log(req.data);
+				// console.log(resData);
+
+				var values = JSON.parse(resData);
+				if (values !== null) {
+					var ethValueText = values.USD;
+					bot.reply(message, query + "/USD: $" + Number(ethValueText));
+				} else {
+					console.log("No values returned");
+				}
+
+
+			});
+		});
+
+		req.on('error', function (e) {
+			console.log('request error: ' + e.message);
+		});
 	}
 }
 
