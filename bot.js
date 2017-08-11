@@ -445,41 +445,42 @@ function valueQuery(message, query) {
 	query = query.toLowerCase();
 	if (query == "btc" || query == "bitcoin" || query == "currency btc" || query == "currency bitcoin") { //https://bitcoincharts.com/about/markets-api/
 		var options = {
-			host: 'api.bitcoincharts.com',
+			host: 'min-api.cryptocompare.com',
 			port: 443,
-			path: '/v1/markets.json',
+			path: '/data/price?fsym=BTC&tsyms=USD',
 			headers: {
 				accept: '*/*'
 			}
 		};
 		
-		var req = https.get(options, function(res) {
+		var req = https.get(options, function (res) {
 			// console.log('STATUS: ' + res.statusCode);
 			// console.log('HEADERS: ' + JSON.stringify(res.headers));
 			res.setEncoding('utf8');
-			
+
 			var resData = "";
 			res.on('data', function (chunk) {
 				resData += chunk;
 			});
-			
+
 			res.on('end', function () {
-			// console.log(req.data);
-			// console.log(resData);
-			
-			var values = JSON.parse(resData);
-			if(values !== null) {
-				var bitcoinValueObject = values.filter(function(el) {
-					return el.symbol === "coinbaseUSD";
-				});
-				var bitcoinValueText = bitcoinValueObject[0].avg;
-				bot.reply(message, "BTC/USD: $" + Number(bitcoinValueText).toFixed(5));  
-			} else {
-				console.log("No values returned");
-			}
+				// console.log(req.data);
+				// console.log(resData);
+
+				var values = JSON.parse(resData);
+				if (values !== null) {
+					var btcValueText = values.USD;
+					bot.reply(message, "BTC/USD: $" + Number(btcValueText));
+				} else {
+					console.log("No values returned");
+				}
 
 
-			});    
+			});
+		});
+
+		req.on('error', function (e) {
+			console.log('request error: ' + e.message);
 		});
 
 		req.on('error', function(e) {
