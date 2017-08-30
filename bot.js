@@ -304,7 +304,8 @@ function bingNsfw(message, query) {
 			request(options, function (error, response, info) {
 				infoObj = JSON.parse(info);
 				//fs.writeFileSync("nodelog.txt", info);
-				if(infoObj.value.length > 0) {
+				//if(infoObj.value.length > 0) {
+				if(false) {
 					var firstResult = infoObj.value[0];
 					var firstURL = firstResult.contentUrl;
 					bot.reply(message, firstURL);
