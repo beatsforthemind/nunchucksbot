@@ -292,6 +292,7 @@ function searchBeer(message, query) {
 
 
 function bingNsfw(message, query) {
+	if (message.channel == 'C0R2JTT7F') {
 	if (query) {
 
 		/*    
@@ -330,7 +331,10 @@ function bingNsfw(message, query) {
 				return;
 			}
 		});
+	} 
 	} else {
+		bot.reply(message, "This is a SFW locale, bro. Try again in #YOLO");
+		return;
 	}
 }
 
