@@ -292,7 +292,46 @@ function searchBeer(message, query) {
 
 
 function bingNsfw(message, query) {
-	bot.reply(message, "http://m.memegen.com/czbbgf.jpg");
+	if (query) {
+
+		/*    
+		const CX = keys.gapi1.cx;
+		const API_KEY = keys.gapi1.key;
+		*/
+
+		if (apiFlip === 1) {
+			// GOOGLE1
+			CX = keys.gapi1.cx;
+			API_KEY = keys.gapi1.key;
+			apiFlip = 0;
+		} else if (apiFlip === 0) {
+			// RUN GOOGLE2
+			CX = keys.gapi2.cx;
+			API_KEY = keys.gapi2.key;
+			apiFlip++;
+		}
+
+		safeLevel = "off";
+
+		customsearch.cse.list({ cx: CX, auth: API_KEY, q: query, searchType: "image", safe: safeLevel, imgSize: "large" }, function (err, resp) {
+			if (err) {
+				console.log('An error occured', err);
+				bot.reply(message, "SCROOGLED");
+				return;
+			}
+			if (resp.items && resp.items.length > 0) {
+				bot.reply(message, resp.items[getRandomInt(0, (resp.items.length - 1))].link);
+				// bot.reply(message, resp.items[0].link);
+
+				// console.log("Parameters are => CX: "+CX+", API_KEY: "+API_KEY+", query: "+query+", safe: "+safeLevel);
+				return;
+			} else {
+				bot.reply(message, "SCROOGLED");
+				return;
+			}
+		});
+	} else {
+	}
 }
 
 
