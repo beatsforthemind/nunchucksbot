@@ -314,17 +314,17 @@ function bingNsfw(message, query) {
 
 		safeLevel = "off";
 
-		customsearch.cse.list({ cx: CX, auth: API_KEY, q: query, searchType: "image", safe: "off", imgSize: "large" }, function (err, resp) {
+		customsearch.cse.list({ cx: CX, auth: API_KEY, q: query, searchType: "image", safe: "off"}, function (err, resp) {
 			if (err) {
 				console.log('An error occured', err);
 				bot.reply(message, "SCROOGLED");
 				return;
 			}
 			if (resp.items && resp.items.length > 0) {
-				if(resp.queries) {
+				/*if(resp.queries) {
 					bot.reply(message, "DEBUG: " + JSON.stringify(resp.queries));
 				}
-				
+				*/
 				bot.reply(message, resp.items[getRandomInt(0, (resp.items.length - 1))].link);
 				// bot.reply(message, resp.items[0].link);
 
