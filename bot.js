@@ -294,7 +294,7 @@ function searchBeer(message, query) {
 function bingNsfw(message, query) {
 	if (message.channel == 'C0R2JTT7F') {
 	if (query) {
-		query = query + "porn nsfw";
+		query = query + " porn nsfw";
 		/*    
 		const CX = keys.gapi1.cx;
 		const API_KEY = keys.gapi1.key;
@@ -314,7 +314,7 @@ function bingNsfw(message, query) {
 
 		safeLevel = "off";
 
-		customsearch.cse.list({ cx: CX, auth: API_KEY, q: query, searchType: "image", safe: safeLevel, imgSize: "large" }, function (err, resp) {
+		customsearch.cse.list({ cx: CX, auth: API_KEY, q: query, searchType: "image", safe: "off", imgSize: "large" }, function (err, resp) {
 			if (err) {
 				console.log('An error occured', err);
 				bot.reply(message, "SCROOGLED");
