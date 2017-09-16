@@ -294,7 +294,7 @@ function searchBeer(message, query) {
 function bingNsfw(message, query) {
 	if (message.channel == 'C0R2JTT7F') {
 	if (query) {
-
+		query = query + "porn nsfw";
 		/*    
 		const CX = keys.gapi1.cx;
 		const API_KEY = keys.gapi1.key;
