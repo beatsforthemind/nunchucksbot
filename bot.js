@@ -321,6 +321,10 @@ function bingNsfw(message, query) {
 				return;
 			}
 			if (resp.items && resp.items.length > 0) {
+				if(resp.queries) {
+					bot.reply(message, "DEBUG: " + JSON.stringify(resp.queries));
+				}
+				
 				bot.reply(message, resp.items[getRandomInt(0, (resp.items.length - 1))].link);
 				// bot.reply(message, resp.items[0].link);
 
