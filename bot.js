@@ -381,6 +381,9 @@ controller.hears(['search (.*)'], 'direct_message,direct_mention,mention,ambient
 					break;
 				case "value":
 					valueQuery(message, query);
+					break;
+				case "meme":
+					searchMeme(message, query);
 				// default:
 			}
 		}
@@ -392,6 +395,31 @@ controller.hears(['search (.*)'], 'direct_message,direct_mention,mention,ambient
 	
 	console.log("########## HEARD SEARCH ##########");
 });
+
+function searchMeme(message, query) {
+	var options = {
+		url: 'http://knowyourmeme.com/search?q=' + query,
+		headers: {
+			'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:24.0) Gecko/20100101 Firefox/24.0',
+		}
+	};
+	function requestCallback (error, response, html) {
+		if (!error && response.statusCode == 200) {
+			var $ = cheerio.load(html);
+			if($('.entry_list').length>0) {
+				var firstResultURL = $('.entry_list .photo:first-child').attr('href');
+				var fullURLToSend = 'http://knowyourmeme.com' + firstResultURL;
+				bot.reply(message, fullURLToSend);
+			} else {
+				bot.reply(message, 'No results found');
+			}
+		} else {
+			bot.reply(message, 'error searching internet: ' + response.statusCode);
+		}
+	}
+	
+	request(options, requestCallback);
+}
 
 //https://developers.google.com/custom-search/json-api/v1/reference/cse/list
 function gImgQuery(message, query) {
