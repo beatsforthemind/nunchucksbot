@@ -317,7 +317,7 @@ function bingNsfw(message, query) {
 		customsearch.cse.list({ cx: CX, auth: API_KEY, q: query, searchType: "image", safe: "off"}, function (err, resp) {
 			if (err) {
 				console.log('An error occured', err);
-				bot.reply(message, "SCROOGLED");
+				bot.reply(message, "ERROR: " + err);
 				return;
 			}
 			if (resp.items && resp.items.length > 0) {
