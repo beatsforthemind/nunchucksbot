@@ -378,6 +378,7 @@ controller.hears(['search (.*)'], 'direct_message,direct_mention,mention,ambient
 					break;
 				case "meme":
 					searchMeme(message, query);
+				case "pf":
 				case "pathfinder":
 					pfQuery(message, query);	
 				// default:
@@ -471,17 +472,21 @@ function pfQuery(message, query) {
     API_KEY = keys.gapi3.key;
     safeLevel = "off";
     
-    customsearch.cse.list({ cx: CX, auth: API_KEY, q: query, safe: safeLevel }, function(err, resp) {
+    customsearch.cse.list({ cx: CX, auth: API_KEY, q: query, safe: safeLevel, num: 3 }, function(err, resp) {
       if (err) {
         console.log('An error occured', err);
         bot.reply(message, "API Error");
         return;
       }
       if (resp.items && resp.items.length > 0) {
-        // bot.reply(message, resp.items[getRandomInt(0, (resp.items.length - 1))].link);
-        bot.reply(message, resp.items[0].link);
-
-        // console.log("Parameters are => CX: "+CX+", API_KEY: "+API_KEY+", query: "+query+", safe: "+safeLevel);
+        // bot.reply(message, resp.items[0].link);
+        // bot.reply(message, resp.items[1].link);
+        resp.items.forEach(function(element) {
+          bot.reply(message, element.link);
+        });
+        return;
+      } else if(false) {
+        // bot.reply(message, resp.items[0].link);
         return;
       } else {
         bot.reply(message, "No results");
