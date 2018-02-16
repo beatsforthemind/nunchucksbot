@@ -6,6 +6,7 @@ if(!process.env.token) {
 }
 process.title = 'chuckbot';
 
+var botReady = false;
 var Botkit = require(__dirname+'/node_modules/botkit/lib/Botkit.js');
 var cheerio = require(__dirname+'/node_modules/cheerio');
 var request = require(__dirname+'/node_modules/request');
@@ -29,27 +30,81 @@ youTube.addParam('type', 'video');
 
 var apiFlip = 0;
 
-/*
 var mysql = require('mysql');
 var connection = mysql.createConnection({
-    host     : keys.database.host,
-    user     : keys.database.user,
-  	password : keys.database.password,
-  	database : keys.database.database
+  host : keys.dbparams.host,
+  user : keys.dbparams.user,
+  password : keys.dbparams.pw,
+  database : keys.dbparams.db
 });
-*/
 
 var controller = Botkit.slackbot({
   debug: true,
   json_file_store: __dirname+'/dataDir'
 });
 
+/*
 var bot = controller.spawn({
   token: process.env.token
 }).startRTM();
+*/
+
+function doSetup() {
+  
+  connection.connect();
+  /*
+  connection.query('SELECT * FROM spoilers', function (error, results, fields) {
+    if (error) throw error;
+    console.log('RESULTS: ', results[0]);
+    console.log('RESULTS: ', results);
+    
+    if(results) {
+      bot.say({
+        text: "*SPOILERS TOPIC:* "+results[0].topic.toString(),
+        channel: "C0ME9V49J"
+      });
+      bot.say({
+        text: "*MESSAGE:* "+results[0].message.toString(),
+        channel: "C0ME9V49J"
+      });
+
+      results.forEach(function(item) {
+        bot.say({
+          text: JSON.stringify(item).toString(),
+          channel: "C0ME9V49J"
+        });    
+      });
+    }
+    
+  });
+  // connection.end();
+  */
+}
+
+var bot = controller.spawn({
+  token: process.env.token
+}).startRTM(function() {
+  botReady = true;
+  doSetup();
+});
+
 
 // ########################################
 // ########################################
+
+/*
+connection.connect();
+connection.query('SELECT * FROM test', function (error, results, fields) {
+  if (error) throw error;
+  // console.log('RESULTS: ', results[0]);
+  console.log('RESULTS: ', results);
+  bot.say({
+    text: "Hello World!",
+    channel: "C0ME9V49J"
+  });
+});
+connection.end();
+*/
 
 controller.hears(['^knock knock'],'direct_message,direct_mention,mention',function(bot, message) {
 	bot.startConversation(message, function(err, convo) {
@@ -336,6 +391,102 @@ function bingNsfw(message, query) {
 		return;
 	}
 }
+
+
+controller.hears(['spoilerUtil (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+	var goodCommand = true; //set false if unable to parse
+  var matches = message.text.match(/spoilerUtil (\S*)/i); //get the word immediately following "search"
+  
+	if(!matches && matches !== null) { //type wasn't found
+		goodCommand = false;
+	}
+	
+	if(goodCommand && typeof matches[1] != 'undefined') {
+		var type = matches[1]; //select the right one from the resultant array
+		var positionAfterType = message.text.indexOf(type) + type.length + 1;
+		var query = message.text.substring(positionAfterType); //get everything after the "type" in the message, adding 1 to account for the space character following the type
+      
+		// if(query) { }
+		switch(type.toLowerCase()) {
+			case "topic":
+  			if(query) {
+  				bot.reply(message, "RUNNING TOPIC");
+  			  // connection.connect();
+          connection.query('UPDATE spoilers SET topic = ? WHERE id = ?', [query, 1], function (error, results, fields) {
+            if(error) {
+              bot.reply(message, "ERROR");
+              console.log(error);
+            }
+            if(results) {
+              console.log(results);
+              
+              // https://slack.com/api/channels.setTopic?token=TOKEN&channel=C0ME9V49J&topic=wenis&pretty=1
+              //
+              var options = {
+            		url: 'https://slack.com/api/channels.setTopic?token='+keys.testapi.token+'&channel=C0ME9V49J&topic='+query,
+            	};
+            	function requestCallback (error, response, html) {
+            		if (!error && response.statusCode == 200) {
+              		bot.reply(message, "SUCCESS");
+            		} else {
+            	  }
+            	}
+            	request(options, requestCallback);
+              //
+              
+              bot.reply(message, "Spoiler topic updated to: "+query);
+            }
+          });
+          // connection.end();
+        }
+				break;
+			
+			case "gettopic":
+				// bot.reply(message, "RUNNING gettopic");
+			  // connection.connect();
+        connection.query('SELECT * FROM spoilers WHERE id = ?', [1], function (error, results, fields) {
+          if(error) {
+            bot.reply(message, "ERROR");
+            // bot.reply(message, JSON.stringify(error).toString());
+            console.log(error);
+          }
+          if(results) {
+            console.log(results);
+            bot.reply(message, "*SPOILER TOPIC:* "+results[0].topic);
+          }
+        });
+        // connection.end();
+				break;
+      // default:
+      
+      return;
+		}
+	}
+	
+	console.log("########## HEARD setSpoilerTopic ##########");
+});
+//
+/*
+case "message":
+  bot.reply(message, "RUNNING MESSAGE");
+	connection.connect();
+  connection.query('UPDATE spoilers SET message = ? WHERE id = ?', [query, 1], function (error, results, fields) {
+    if(error) {
+      bot.reply(message, "ERROR");
+      console.log(error);
+    }
+    if(results) {
+      console.log(results);
+      bot.reply(message, "Spoiler message updated to: "+query);
+    }
+  });
+  connection.end();
+	break;
+*/
+//
+controller.on('channel_topic', function(bot, message) {
+  // bot.reply(message, message.channel.toString());
+});
 
 
 //this be the main search listener that delegates to other functions based on second "argument"
