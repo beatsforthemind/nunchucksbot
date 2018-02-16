@@ -1,8 +1,6 @@
 // token=<MY TOKEN> node bot.js
 
-
-
-if (!process.env.token) {
+if(!process.env.token) {
     console.log('Error: Specify token in environment');
     process.exit(1);
 }
@@ -31,24 +29,27 @@ youTube.addParam('type', 'video');
 
 var apiFlip = 0;
 
-var mysql      = require('mysql');
+/*
+var mysql = require('mysql');
 var connection = mysql.createConnection({
     host     : keys.database.host,
     user     : keys.database.user,
   	password : keys.database.password,
   	database : keys.database.database
 });
+*/
 
 var controller = Botkit.slackbot({
   debug: true,
   json_file_store: __dirname+'/dataDir'
 });
 
-
 var bot = controller.spawn({
   token: process.env.token
 }).startRTM();
 
+// ########################################
+// ########################################
 
 controller.hears(['^knock knock'],'direct_message,direct_mention,mention',function(bot, message) {
 	bot.startConversation(message, function(err, convo) {
@@ -91,7 +92,6 @@ controller.hears(['^knock knock'],'direct_message,direct_mention,mention',functi
 				}
 			});
 		});
-		
 	});
 });
 
@@ -146,7 +146,6 @@ controller.hears(['call me (.*)'],'direct_message,direct_mention,mention',functi
 
 
 controller.hears(['what is my name','who am i'],'direct_message,direct_mention,mention',function(bot, message) {
-
     controller.storage.users.get(message.user,function(err, user) {
         if (user && user.name) {
             bot.reply(message,'Your name is ' + user.name);
@@ -158,9 +157,7 @@ controller.hears(['what is my name','who am i'],'direct_message,direct_mention,m
 
 
 controller.hears(['shutdown'],'direct_message,direct_mention,mention',function(bot, message) {
-
     bot.startConversation(message,function(err, convo) {
-
         convo.ask('Are you sure you want me to shutdown?',[
             {
                 pattern: bot.utterances.yes,
@@ -186,22 +183,18 @@ controller.hears(['shutdown'],'direct_message,direct_mention,mention',function(b
 
 
 controller.hears(['uptime','identify yourself','who are you','what is your name','version'],'direct_message,direct_mention,mention',function(bot, message) {
-
     var hostname = os.hostname();
     var uptime = formatUptime(process.uptime());
 		var revision = child.execSync('git rev-parse HEAD').toString().trim();
-
     bot.reply(message,':robot_face: I am a bot named <@' + bot.identity.name + '>. I have been running for ' + uptime + ' on ' + hostname + '. My current git revision is ' + revision);
-
 });
 
-controller.hears(['update yourself'],'direct_message,direct_mention,mention',function(bot, message) {
-	
+
+controller.hears(['update yourself'],'direct_message,direct_mention,mention',function(bot, message) {	
 	// child.execSync('sh ./start.sh');
 	// spawn('sh', ['./start.sh']);
 	var whoami = child.execSync('whoami').toString().trim();
-	bot.reply(message, 'I AM: '+whoami);
-	
+	bot.reply(message, 'I AM: '+whoami);	
 });
 
 
@@ -260,6 +253,7 @@ controller.hears(['roll '],'direct_message,direct_mention,mention',function(bot,
 	}
 });
 
+
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -294,12 +288,13 @@ function searchBeer(message, query) {
 function bingNsfw(message, query) {
 	if (message.channel == 'C0R2JTT7F') {
 	if (query) {
-		query = query + " porn nsfw";
+		query = query + " porn";
+		
 		/*    
 		const CX = keys.gapi1.cx;
 		const API_KEY = keys.gapi1.key;
 		*/
-
+		
 		if (apiFlip === 1) {
 			// GOOGLE1
 			CX = keys.gapi1.cx;
@@ -343,7 +338,6 @@ function bingNsfw(message, query) {
 }
 
 
-
 //this be the main search listener that delegates to other functions based on second "argument"
 controller.hears(['search (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
 	var goodCommand = true; //set false if unable to parse
@@ -384,6 +378,8 @@ controller.hears(['search (.*)'], 'direct_message,direct_mention,mention,ambient
 					break;
 				case "meme":
 					searchMeme(message, query);
+				case "pathfinder":
+					pfQuery(message, query);	
 				// default:
 			}
 		}
@@ -395,6 +391,7 @@ controller.hears(['search (.*)'], 'direct_message,direct_mention,mention,ambient
 	
 	console.log("########## HEARD SEARCH ##########");
 });
+
 
 function searchMeme(message, query) {
 	var options = {
@@ -420,6 +417,7 @@ function searchMeme(message, query) {
 	
 	request(options, requestCallback);
 }
+
 
 //https://developers.google.com/custom-search/json-api/v1/reference/cse/list
 function gImgQuery(message, query) {
@@ -466,6 +464,35 @@ function gImgQuery(message, query) {
 }
 
 
+function pfQuery(message, query) {
+  if(query) {
+    // http://www.d20pfsrd.com/ SEARCH
+    CX = "006680642033474972217:6zo0hx_wle8";
+    API_KEY = keys.gapi3.key;
+    safeLevel = "off";
+    
+    customsearch.cse.list({ cx: CX, auth: API_KEY, q: query, safe: safeLevel }, function(err, resp) {
+      if (err) {
+        console.log('An error occured', err);
+        bot.reply(message, "API Error");
+        return;
+      }
+      if (resp.items && resp.items.length > 0) {
+        // bot.reply(message, resp.items[getRandomInt(0, (resp.items.length - 1))].link);
+        bot.reply(message, resp.items[0].link);
+
+        // console.log("Parameters are => CX: "+CX+", API_KEY: "+API_KEY+", query: "+query+", safe: "+safeLevel);
+        return;
+      } else {
+        bot.reply(message, "No results");
+        return;   
+      }
+    });
+  } else {
+  }
+}
+
+
 //https://www.npmjs.com/package/youtube-node
 function ytQuery(message, query) {
   if (query) {
@@ -485,6 +512,7 @@ function ytQuery(message, query) {
     });
   }
 }
+
 
 function valueQuery(message, query) {
 	query = query.toLowerCase();
@@ -519,8 +547,6 @@ function valueQuery(message, query) {
 				} else {
 					console.log("No values returned");
 				}
-
-
 			});
 		});
 
@@ -563,8 +589,6 @@ function valueQuery(message, query) {
 			} else {
 				console.log("No values returned");
 			}
-
-
 			});    
 		});
 
@@ -603,8 +627,6 @@ function valueQuery(message, query) {
 				} else {
 					console.log("No values returned");
 				}
-
-
 			});
 		});
 
@@ -643,8 +665,6 @@ function valueQuery(message, query) {
 				} else {
 					console.log("No values returned");
 				}
-
-
 			});
 		});
 
@@ -799,8 +819,6 @@ function valueQuery(message, query) {
 				} else {
 					console.log("No values returned");
 				}
-
-
 			});
 		});
 
@@ -809,8 +827,6 @@ function valueQuery(message, query) {
 		});
 	}
 }
-
-
 
 
 controller.hears(['whatis (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
@@ -837,9 +853,7 @@ controller.hears(['whatis (.*)'], 'direct_message,direct_mention,mention,ambient
 });
 
 
-
 function dictGet(message, word) {
-  
   var options = {
     host: 'owlbot.info',
     port: 443,
@@ -881,11 +895,8 @@ function dictGet(message, word) {
 
   req.on('error', function(e) {
     console.log('request error: ' + e.message);
-  });
-  
+  });  
 }
-
-
 
 
 controller.hears(['addname (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
@@ -899,15 +910,11 @@ controller.hears(['addname (.*)'], 'direct_message,direct_mention,mention,ambien
   // var args = minimist(process.argv.slice(2));
   var args = minimist(command);
   console.log(args);
-
-
-
 });
 
 
-
 controller.hears(['quesignifica (.*)', 'quésignifica (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
-    var matches = message.text.match(/qu[eé]significa (\S*)/i); //get the word immediately following "search"
+  var matches = message.text.match(/qu[eé]significa (\S*)/i); //get the word immediately following "search"
   
 	request('http://www.asihablamos.com/word/palabra/' + matches[1] + '.php', function (error, response, html) {
 		if (!error && response.statusCode == 200) {
@@ -933,4 +940,3 @@ controller.hears(['quesignifica (.*)', 'quésignifica (.*)'], 'direct_message,di
     }
 	});
 });
-
