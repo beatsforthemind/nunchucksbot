@@ -479,11 +479,12 @@ function pfQuery(message, query) {
         return;
       }
       if (resp.items && resp.items.length > 0) {
-        // bot.reply(message, resp.items[0].link);
-        // bot.reply(message, resp.items[1].link);
+        bot.reply(message, resp.items[0].link);
+        /*
         resp.items.forEach(function(element) {
           bot.reply(message, element.link);
         });
+        */
         return;
       } else if(false) {
         // bot.reply(message, resp.items[0].link);
