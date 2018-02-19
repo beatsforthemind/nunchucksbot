@@ -274,7 +274,7 @@ controller.on('user_channel_join',function(bot,message) {
 	var userNumber = message.user;
 	bot.api.users.info({user:userNumber}, function(err, response) {
 		if(err) {
-			bot.botkit.log("ERROR!!!!", err);
+			bot.botkit.log("ERROR", err);
 		} else {
 			bot.reply(message,'Welcome to the channel, @' + response.user.name + '!');
 		}
@@ -282,9 +282,11 @@ controller.on('user_channel_join',function(bot,message) {
 });
 
 
+/*
 controller.on('user_channel_leave',function(bot,message) {
     bot.reply(message,'Goodbye, @' + message.user + '!');
 });
+*/
 
 
 controller.hears(['roll '],'direct_message,direct_mention,mention',function(bot, message) { 
@@ -390,6 +392,21 @@ function bingNsfw(message, query) {
 		return;
 	}
 }
+
+
+controller.hears(['what\'s the current spoiler','whats the current spoiler','what\'s the spoiler topic','whats the spoiler topic','what\'s the spoiler','what is the spoiler','what is the current spoiler topic','what is the current spoiler'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+  connection.query('SELECT * FROM spoilers WHERE id = ?', [1], function (error, results, fields) {
+    if(error) {
+      bot.reply(message, "ERROR");
+      // bot.reply(message, JSON.stringify(error).toString());
+      console.log(error);
+    }
+    if(results) {
+      // console.log(results);
+      bot.reply(message, "<#"+keys.spoilers.roomid+"|spoilers> topic is *"+results[0].topic+"*");
+    }
+  });
+});
 
 
 controller.hears(['spoilerCmd (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
