@@ -50,7 +50,7 @@ var bot = controller.spawn({
 */
 
 function doSetup() {
-  
+  // OPEN MYSQL CONNECION
   connection.connect();
   /*
   connection.query('SELECT * FROM spoilers', function (error, results, fields) {
@@ -75,7 +75,6 @@ function doSetup() {
         });    
       });
     }
-    
   });
   // connection.end();
   */
@@ -87,7 +86,6 @@ var bot = controller.spawn({
   botReady = true;
   doSetup();
 });
-
 
 // ########################################
 // ########################################
@@ -356,7 +354,7 @@ function bingNsfw(message, query) {
 			API_KEY = keys.gapi1.key;
 			apiFlip = 0;
 		} else if (apiFlip === 0) {
-			// RUN GOOGLE2
+			// GOOGLE2
 			CX = keys.gapi2.cx;
 			API_KEY = keys.gapi2.key;
 			apiFlip++;
@@ -371,7 +369,8 @@ function bingNsfw(message, query) {
 				return;
 			}
 			if (resp.items && resp.items.length > 0) {
-				/*if(resp.queries) {
+				/*
+        if(resp.queries) {
 					bot.reply(message, "DEBUG: " + JSON.stringify(resp.queries));
 				}
 				*/
@@ -393,24 +392,25 @@ function bingNsfw(message, query) {
 }
 
 
-controller.hears(['spoilerUtil (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
-	var goodCommand = true; //set false if unable to parse
-  var matches = message.text.match(/spoilerUtil (\S*)/i); //get the word immediately following "search"
+controller.hears(['spoilerCmd (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+	var goodCommand = true; // set false if unable to parse
+  var matches = message.text.match(/spoilerCmd (\S*)/i); // get the word immediately following "search"
   
-	if(!matches && matches !== null) { //type wasn't found
+	if(!matches && matches !== null) { // type wasn't found
 		goodCommand = false;
 	}
 	
 	if(goodCommand && typeof matches[1] != 'undefined') {
-		var type = matches[1]; //select the right one from the resultant array
+		var type = matches[1]; // select the right one from the resultant array
 		var positionAfterType = message.text.indexOf(type) + type.length + 1;
-		var query = message.text.substring(positionAfterType); //get everything after the "type" in the message, adding 1 to account for the space character following the type
+		var query = message.text.substring(positionAfterType); // get everything after the "type" in the message, adding 1 to account for the space character following the type
       
 		// if(query) { }
 		switch(type.toLowerCase()) {
-			case "topic":
+  		
+			case "settopic":
   			if(query) {
-  				bot.reply(message, "RUNNING TOPIC");
+  				// bot.reply(message, "SETTING TOPIC");
   			  // connection.connect();
           connection.query('UPDATE spoilers SET topic = ? WHERE id = ?', [query, 1], function (error, results, fields) {
             if(error) {
@@ -418,31 +418,26 @@ controller.hears(['spoilerUtil (.*)'], 'direct_message,direct_mention,mention,am
               console.log(error);
             }
             if(results) {
-              console.log(results);
-              
-              // https://slack.com/api/channels.setTopic?token=TOKEN&channel=C0ME9V49J&topic=wenis&pretty=1
-              //
+              // console.log(results);  
+              // https://slack.com/api/channels.setTopic?token=TOKEN&channel=CHANNEL&topic=VAR
               var options = {
-            		url: 'https://slack.com/api/channels.setTopic?token='+keys.testapi.token+'&channel=C0ME9V49J&topic='+query,
+            		url: 'https://slack.com/api/channels.setTopic?token='+keys.chuck.token+'&channel='+keys.spoilers.roomid+'&topic='+query,
             	};
             	function requestCallback (error, response, html) {
             		if (!error && response.statusCode == 200) {
-              		bot.reply(message, "SUCCESS");
+              		// bot.reply(message, "SUCCESS");
             		} else {
             	  }
             	}
             	request(options, requestCallback);
-              //
-              
-              bot.reply(message, "Spoiler topic updated to: "+query);
+              bot.reply(message, "<#"+keys.spoilers.roomid+"|spoilers> topic is now: *"+query+"*");
             }
           });
-          // connection.end();
         }
 				break;
 			
 			case "gettopic":
-				// bot.reply(message, "RUNNING gettopic");
+				// bot.reply(message, "GETTING TOPIC");
 			  // connection.connect();
         connection.query('SELECT * FROM spoilers WHERE id = ?', [1], function (error, results, fields) {
           if(error) {
@@ -451,62 +446,135 @@ controller.hears(['spoilerUtil (.*)'], 'direct_message,direct_mention,mention,am
             console.log(error);
           }
           if(results) {
-            console.log(results);
-            bot.reply(message, "*SPOILER TOPIC:* "+results[0].topic);
+            // console.log(results);
+            bot.reply(message, "<#"+keys.spoilers.roomid+"|spoilers> topic is *"+results[0].topic+"*");
           }
         });
-        // connection.end();
 				break;
-      // default:
       
+      case "setpurpose":
+  			if(query) {
+  				// bot.reply(message, "SETTING PURPOSE");
+  			  // connection.connect();
+          connection.query('UPDATE spoilers SET purpose = ? WHERE id = ?', [query, 1], function (error, results, fields) {
+            if(error) {
+              bot.reply(message, "ERROR");
+              console.log(error);
+            }
+            if(results) {
+              // console.log(results);  
+              // https://slack.com/api/channels.setPurpose?token=TOKEN&channel=CHANNEL&purpose=VAR
+              var options = {
+            		url: 'https://slack.com/api/channels.setPurpose?token='+keys.chuck.token+'&channel='+keys.spoilers.roomid+'&purpose='+query,
+            	};
+            	function requestCallback (error, response, html) {
+            		if (!error && response.statusCode == 200) {
+              		// bot.reply(message, "SUCCESS");
+            		} else {
+            	  }
+            	}
+            	request(options, requestCallback);
+              bot.reply(message, "<#"+keys.spoilers.roomid+"|spoilers> purpose is now: *"+query+"*");
+            }
+          });
+        }
+				break;
+      
+      case "getpurpose":
+				// bot.reply(message, "GETTING PURPOSE");
+			  // connection.connect();
+        connection.query('SELECT * FROM spoilers WHERE id = ?', [1], function (error, results, fields) {
+          if(error) {
+            bot.reply(message, "ERROR");
+            // bot.reply(message, JSON.stringify(error).toString());
+            console.log(error);
+          }
+          if(results) {
+            // console.log(results);
+            bot.reply(message, "<#"+keys.spoilers.roomid+"|spoilers> purpose is *"+results[0].purpose+"*");
+          }
+        });
+				break;
+				
+      // default:
       return;
 		}
 	}
 	
-	console.log("########## HEARD setSpoilerTopic ##########");
+	console.log("########## HEARD #spoilers ##########");
 });
-//
-/*
-case "message":
-  bot.reply(message, "RUNNING MESSAGE");
-	connection.connect();
-  connection.query('UPDATE spoilers SET message = ? WHERE id = ?', [query, 1], function (error, results, fields) {
-    if(error) {
-      bot.reply(message, "ERROR");
-      console.log(error);
-    }
-    if(results) {
-      console.log(results);
-      bot.reply(message, "Spoiler message updated to: "+query);
-    }
-  });
-  connection.end();
-	break;
-*/
-//
+
+
+// CHANNEL_TOPIC HANDLER
 controller.on('channel_topic', function(bot, message) {
-  // bot.reply(message, message.channel.toString());
+  // bot.reply(message, "channel_topic event fired");
+  // bot.reply(message, JSON.stringify(message).toString());
+  // bot.reply(message, message.topic.toString());
+  
+  if(message.channel.toString() == keys.spoilers.roomid) {
+    connection.query('UPDATE spoilers SET topic = ? WHERE id = ?', [message.topic, 1], function (error, results, fields) { 
+      if(error) {
+        bot.reply(message, "ERROR");
+        console.log(error);
+      }
+      if(results) {
+        // bot.reply(message, "DATABASE UPDATED: "+message.topic);
+        console.log(results);
+        
+        bot.say({
+          text: "<#"+keys.spoilers.roomid+"|spoilers> topic has been updated to: *"+message.topic+"* by <@"+message.user+">",
+          channel: keys.general.roomid
+        });
+      }
+    });
+  }
 });
 
 
-//this be the main search listener that delegates to other functions based on second "argument"
-controller.hears(['search (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
-	var goodCommand = true; //set false if unable to parse
-  var matches = message.text.match(/search (\S*)/i); //get the word immediately following "search"
+// CHANNEL_TOPIC HANDLER
+controller.on('channel_purpose', function(bot, message) {
+  // bot.reply(message, "channel_purpose event fired");
+  // bot.reply(message, JSON.stringify(message).toString());
+  // bot.reply(message, message.purpose.toString());
   
-	if(!matches && matches !== null) { //type wasn't found
+  if(message.channel.toString() == keys.spoilers.roomid) {
+    connection.query('UPDATE spoilers SET purpose = ? WHERE id = ?', [message.purpose, 1], function (error, results, fields) { 
+      if(error) {
+        bot.reply(message, "ERROR");
+        console.log(error);
+      }
+      if(results) {
+        // bot.reply(message, "DATABASE UPDATED: "+message.purpose);
+        console.log(results);
+        
+        bot.say({
+          text: "<#"+keys.spoilers.roomid+"|spoilers> purpose has been updated to: *"+message.purpose+"* by <@"+message.user+">",
+          channel: keys.general.roomid
+        });
+      }
+    });
+  }
+});
+
+
+// this be the main search listener that delegates to other functions based on second "argument"
+controller.hears(['search (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+	var goodCommand = true; // set false if unable to parse
+  var matches = message.text.match(/search (\S*)/i); // get the word immediately following "search"
+  
+	if(!matches && matches !== null) { // type wasn't found
 		goodCommand = false;
 	}
 	
 	if(goodCommand && typeof matches[1] != 'undefined') {
-		var type = matches[1]; //select the right one from the resultant array
+		var type = matches[1]; // select the right one from the resultant array
 		var positionAfterType = message.text.indexOf(type) + type.length + 1;
-		var query = message.text.substring(positionAfterType); //get everything after the "type" in the message, adding 1 to account for the space character following the type
+		var query = message.text.substring(positionAfterType); // get everything after the "type" in the message, adding 1 to account for the space character following the type
       
-		if(!query) { //query wasn't found
+		if(!query) { // query wasn't found
 			goodCommand = false;
 		} else {
-			switch(type.toLowerCase()) { //send query to proper function
+			switch(type.toLowerCase()) { // send query to proper function
   			case "img":
 				case "image":
 				case "images":
@@ -537,7 +605,7 @@ controller.hears(['search (.*)'], 'direct_message,direct_mention,mention,ambient
 		}
 	}
 	
-	if(goodCommand === false) { //some sort of problem, throw error message
+	if(goodCommand === false) { // some sort of problem, throw error message
 		// bot.reply(message,'There was a problem with your search.  Please try again.  _Hint - Use the following syntax: search $type_of_search $query_to_be_searched_');
 	}
 	
@@ -571,7 +639,7 @@ function searchMeme(message, query) {
 }
 
 
-//https://developers.google.com/custom-search/json-api/v1/reference/cse/list
+// https://developers.google.com/custom-search/json-api/v1/reference/cse/list
 function gImgQuery(message, query) {
   if (query) {
     
@@ -650,7 +718,7 @@ function pfQuery(message, query) {
 }
 
 
-//https://www.npmjs.com/package/youtube-node
+// https://www.npmjs.com/package/youtube-node
 function ytQuery(message, query) {
   if (query) {
     youTube.search(query, 1, function(err, res) {
@@ -673,7 +741,7 @@ function ytQuery(message, query) {
 
 function valueQuery(message, query) {
 	query = query.toLowerCase();
-	if (query == "btc" || query == "bitcoin" || query == "currency btc" || query == "currency bitcoin") { //https://bitcoincharts.com/about/markets-api/
+	if (query == "btc" || query == "bitcoin" || query == "currency btc" || query == "currency bitcoin") { // https://bitcoincharts.com/about/markets-api/
 		var options = {
 			host: 'min-api.cryptocompare.com',
 			port: 443,
@@ -869,7 +937,7 @@ function valueQuery(message, query) {
 			console.log('request error: ' + e.message);
 		});
 		
-	} else if(query.startsWith("stock") || query.startsWith("nyse") || query.startsWith("nasdaq")) { //http://dev.markitondemand.com/MODApis
+	} else if(query.startsWith("stock") || query.startsWith("nyse") || query.startsWith("nasdaq")) { // http://dev.markitondemand.com/MODApis
 		var queryArray = query.split(" ");
 		var stock = String(queryArray[1]).trim();
 			var options = {
@@ -943,7 +1011,7 @@ function valueQuery(message, query) {
 		});
 	} else {
 		query = query.toUpperCase();
-		if(query.indexOf(" ") > -1) { //if there are spaces, shit will break
+		if(query.indexOf(" ") > -1) { // if there are spaces, shit will break
 			return;
 		}
 		var options = {
@@ -987,10 +1055,10 @@ function valueQuery(message, query) {
 
 
 controller.hears(['whatis (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
-	var goodCommand = true; //set false if unable to parse
-  var matches = message.text.match(/whatis (\S*)/i); //get the word immediately following "search"
+	var goodCommand = true; // set false if unable to parse
+  var matches = message.text.match(/whatis (\S*)/i); // get the word immediately following "search"
   
-	if(!matches && matches !== null) { //type wasn't found
+	if(!matches && matches !== null) { // type wasn't found
 		goodCommand = false;
 	}
 	
@@ -1045,8 +1113,6 @@ function dictGet(message, word) {
           bot.reply(message, "Haven't heard of that");
         }
       }
-
-
     });    
   });
 
@@ -1061,7 +1127,7 @@ controller.hears(['addname (.*)'], 'direct_message,direct_mention,mention,ambien
   // var matches = message.text.match(/addname/i);
   
   var textPos = message.text.indexOf('addname') + 8;
-  var command = message.text.substring(textPos); //get everything after the "type" in the message, adding 1 to account for the space character following the type
+  var command = message.text.substring(textPos); // get everything after the "type" in the message, adding 1 to account for the space character following the type
   console.log(command);
   
   // var args = minimist(process.argv.slice(2));
@@ -1071,7 +1137,7 @@ controller.hears(['addname (.*)'], 'direct_message,direct_mention,mention,ambien
 
 
 controller.hears(['quesignifica (.*)', 'quésignifica (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
-  var matches = message.text.match(/qu[eé]significa (\S*)/i); //get the word immediately following "search"
+  var matches = message.text.match(/qu[eé]significa (\S*)/i); // get the word immediately following "search"
   
 	request('http://www.asihablamos.com/word/palabra/' + matches[1] + '.php', function (error, response, html) {
 		if (!error && response.statusCode == 200) {
