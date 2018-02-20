@@ -667,7 +667,7 @@ function searchMeme(message, query) {
 // https://developers.google.com/custom-search/json-api/v1/reference/cse/list
 function gImgQuery(message, query) {
   if (query) {
-    bot.reply(message, JSON.stringify(message).toString());
+    // bot.reply(message, JSON.stringify(message).toString());
     /*    
     const CX = keys.gapi1.cx;
     const API_KEY = keys.gapi1.key;
