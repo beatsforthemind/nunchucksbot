@@ -341,52 +341,60 @@ function searchBeer(message, query) {
 
 
 function bingNsfw(message, query) {
-	if (message.channel == 'C0R2JTT7F') {
-	if (query) {
-		query = query + " porn";
-		
-		/*    
-		const CX = keys.gapi1.cx;
-		const API_KEY = keys.gapi1.key;
-		*/
-		
-		if (apiFlip === 1) {
-			// GOOGLE1
-			CX = keys.gapi1.cx;
-			API_KEY = keys.gapi1.key;
-			apiFlip = 0;
-		} else if (apiFlip === 0) {
-			// GOOGLE2
-			CX = keys.gapi2.cx;
-			API_KEY = keys.gapi2.key;
-			apiFlip++;
-		}
-
-		safeLevel = "off";
-
-		customsearch.cse.list({ cx: CX, auth: API_KEY, q: query, searchType: "image", safe: "off"}, function (err, resp) {
-			if (err) {
-				console.log('An error occured', err);
-				bot.reply(message, "ERROR: " + err);
-				return;
-			}
-			if (resp.items && resp.items.length > 0) {
-				/*
-        if(resp.queries) {
-					bot.reply(message, "DEBUG: " + JSON.stringify(resp.queries));
-				}
-				*/
-				bot.reply(message, resp.items[getRandomInt(0, (resp.items.length - 1))].link);
-				// bot.reply(message, resp.items[0].link);
-
-				// console.log("Parameters are => CX: "+CX+", API_KEY: "+API_KEY+", query: "+query+", safe: "+safeLevel);
-				return;
-			} else {
-				bot.reply(message, "SCROOGLED");
-				return;
-			}
-		});
-	} 
+	if(message.channel == 'C0R2JTT7F') {
+  	if (query) {
+  		query = query + " xxx porn";
+  		
+  		/*    
+  		const CX = keys.gapi1.cx;
+  		const API_KEY = keys.gapi1.key;
+  		*/
+  		
+  		if (apiFlip === 1) {
+  			// GOOGLE1
+  			CX = keys.gapi1.cx;
+  			API_KEY = keys.gapi1.key;
+  			apiFlip = 0;
+  		} else if (apiFlip === 0) {
+  			// GOOGLE2
+  			CX = keys.gapi2.cx;
+  			API_KEY = keys.gapi2.key;
+  			apiFlip++;
+  		}
+  
+  		safeLevel = "off";
+  
+  		customsearch.cse.list({ cx: CX, auth: API_KEY, q: query, searchType: "image", safe: "off"}, function (err, resp) {
+  			if(err) {
+  				console.log('An error occured', err);
+  				bot.reply(message, "ERROR: " + err);
+  				return;
+  			}
+  			if(resp.items && resp.items.length > 0) {
+  				/*
+          if(resp.queries) {
+  					bot.reply(message, "DEBUG: " + JSON.stringify(resp.queries));
+  				}
+  				*/
+  				var imgUrl = resp.items[getRandomInt(0, (resp.items.length - 1))].link;
+  				bot.reply(message, imgUrl);
+  				// console.log("Parameters are => CX: "+CX+", API_KEY: "+API_KEY+", query: "+query+", safe: "+safeLevel);
+  				connection.query('INSERT INTO search_nsfw SET ?', {user: message.user.toString(), query: query, url: imgUrl, timestamp: (Math.floor(new Date() / 1000))}, function (error, results, fields) {
+            if(error) {
+              // bot.reply(message, "ERROR");
+              console.log(error);
+            }
+            if(results) {
+              console.log(results);
+            }
+          });
+  				return;
+  			} else {
+  				bot.reply(message, "SCROOGLED");
+  				return;
+  			}
+  		});
+  	} 
 	} else {
 		bot.reply(message, "This is a SFW locale, bro. Try again in #YOLO");
 		return;
@@ -659,7 +667,7 @@ function searchMeme(message, query) {
 // https://developers.google.com/custom-search/json-api/v1/reference/cse/list
 function gImgQuery(message, query) {
   if (query) {
-    
+    bot.reply(message, JSON.stringify(message).toString());
     /*    
     const CX = keys.gapi1.cx;
     const API_KEY = keys.gapi1.key;
@@ -686,10 +694,19 @@ function gImgQuery(message, query) {
         return;
       }
       if (resp.items && resp.items.length > 0) {
-        bot.reply(message, resp.items[getRandomInt(0, (resp.items.length - 1))].link);
+        var imgUrl = resp.items[getRandomInt(0, (resp.items.length - 1))].link;
+        bot.reply(message, imgUrl);
         // bot.reply(message, resp.items[0].link);
-        
         // console.log("Parameters are => CX: "+CX+", API_KEY: "+API_KEY+", query: "+query+", safe: "+safeLevel);
+        connection.query('INSERT INTO search_img SET ?', {user: message.user.toString(), query: query, url: imgUrl, timestamp: (Math.floor(new Date() / 1000))}, function (error, results, fields) {
+          if(error) {
+            // bot.reply(message, "ERROR");
+            console.log(error);
+          }
+          if(results) {
+            console.log(results);
+          }
+        });
         return;
       } else {
         bot.reply(message, "SCROOGLED");
