@@ -402,6 +402,60 @@ function bingNsfw(message, query) {
 }
 
 
+controller.hears(['halimage'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+	// https://slack.com/api/channels.setTopic?token=TOKEN&channel=CHANNEL&topic=VAR
+  var options = {
+		url: 'https://slack.beatsforthemind.com/hal/'
+	};
+	function requestCallback (error, response, html) {
+		if (!error && response.statusCode == 200) {
+  		// bot.reply(message, "SUCCESS");
+  		// bot.reply(message, response.body);
+  		
+  		//
+  		if(apiFlip === 1) {
+        // GOOGLE1
+        CX = keys.gapi1.cx;
+        API_KEY = keys.gapi1.key;
+        apiFlip = 0;
+      } else if(apiFlip === 0) {
+        // RUN GOOGLE2
+        CX = keys.gapi2.cx;
+        API_KEY = keys.gapi2.key;
+        apiFlip++;
+      }
+      
+      safeLevel = "medium";
+      
+      customsearch.cse.list({ cx: CX, auth: API_KEY, q: response.body, searchType: "image", safe: safeLevel, imgSize: "large" }, function(err, resp) {
+        if(err) {
+          console.log('An error occured', err);
+          bot.reply(message, "API ERROR");
+          return;
+        }
+        if(resp.items && resp.items.length > 0) {
+          var imgUrl = resp.items[getRandomInt(0, (resp.items.length - 1))].link;
+          bot.reply(message, response.body);
+          bot.reply(message, imgUrl);
+          // bot.reply(message, resp.items[0].link);
+          return;
+        } else {
+          bot.reply(message, "SCROOGLED");
+          return;   
+        }
+      });
+  		//
+  		
+		} else {
+  		bot.reply(message, "ERROR");
+	  }
+	}
+	request(options, requestCallback);
+  
+	console.log("########## HEARD halimage ##########");
+});
+
+
 controller.hears(['what\'s the current spoiler','whats the current spoiler','what\'s the spoiler topic','whats the spoiler topic','what\'s the spoiler','what is the spoiler','what is the current spoiler topic','what is the current spoiler'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
   connection.query('SELECT * FROM spoilers WHERE id = ?', [1], function (error, results, fields) {
     if(error) {
