@@ -676,9 +676,11 @@ controller.hears(['search (.*)'], 'direct_message,direct_mention,mention,ambient
 					break;
 				case "meme":
 					searchMeme(message, query);
+					break;
 				case "pf":
 				case "pathfinder":
 					pfQuery(message, query);	
+					break;
 				// default:
 			}
 		}
