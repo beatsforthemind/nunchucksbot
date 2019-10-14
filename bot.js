@@ -471,6 +471,8 @@ controller.hears(['what\'s the current spoiler','whats the current spoiler','wha
 });
 
 
+
+
 controller.hears(['spoilerCmd (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
 	var goodCommand = true; // set false if unable to parse
   var matches = message.text.match(/spoilerCmd (\S*)/i); // get the word immediately following "search"
@@ -718,6 +720,19 @@ function searchMeme(message, query) {
 	
 	request(options, requestCallback);
 }
+
+controller.hears(['comicactivity'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+	var options = {
+		url: 'https://comics.thunderblaster.io/activity',
+		headers: {
+			'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:24.0) Gecko/20100101 Firefox/24.0',
+		}
+	};
+	function requestCallback (error, response, html) {
+		bot.reply(message, html);
+	}
+	request(options, requestCallback);
+});
 
 
 // https://developers.google.com/custom-search/json-api/v1/reference/cse/list
