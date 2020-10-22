@@ -1,13 +1,22 @@
 // token=<MY TOKEN> node bot.js
 
+PORT = 3001;
+
+/*
 if(!process.env.token) {
     console.log('Error: Specify token in environment');
     process.exit(1);
 }
+*/
 process.title = 'chuckbot';
 
 var botReady = false;
-var Botkit = require(__dirname+'/node_modules/botkit/lib/Botkit.js');
+
+var { Botkit } = require(__dirname+'/node_modules/botkit/lib/index.js');
+// var Botkit = require('botkit');
+// const { SlackAdapter } = require('botbuilder-adapter-slack');
+var { SlackAdapter } = require('botbuilder-adapter-slack');
+
 var cheerio = require(__dirname+'/node_modules/cheerio');
 var request = require(__dirname+'/node_modules/request');
 var fs = require('fs');
@@ -38,10 +47,27 @@ var connection = mysql.createConnection({
   database : keys.dbparams.db
 });
 
+const adapter = new SlackAdapter({
+    signingSecret: '',
+    clientSigningSecret: '',
+    botToken: '',
+    port: 3001
+});
+
+const controller = new Botkit({
+    adapter,
+    debug: true,
+    json_file_store: __dirname+'/dataDir',
+    port: 3001
+});
+
+/*
+// 0.x
 var controller = Botkit.slackbot({
   debug: true,
   json_file_store: __dirname+'/dataDir'
 });
+*
 
 /*
 var bot = controller.spawn({
@@ -80,13 +106,18 @@ function doSetup() {
   */
 }
 
+/*
 var bot = controller.spawn({
   token: process.env.token
 }).startRTM(function() {
   botReady = true;
   doSetup();
 });
+*/
 
+botReady = true;
+doSetup();
+  
 // ########################################
 // ########################################
 
@@ -208,7 +239,7 @@ controller.hears(['what is my name','who am i'],'direct_message,direct_mention,m
     });
 });
 
-
+/*
 controller.hears(['shutdown'],'direct_message,direct_mention,mention',function(bot, message) {
     bot.startConversation(message,function(err, convo) {
         convo.ask('Are you sure you want me to shutdown?',[
@@ -219,7 +250,7 @@ controller.hears(['shutdown'],'direct_message,direct_mention,mention',function(b
                     convo.next();
                     setTimeout(function() {
                         process.exit();
-                    },3000);
+                    }, 3000);
                 }
             },
         {
@@ -233,7 +264,7 @@ controller.hears(['shutdown'],'direct_message,direct_mention,mention',function(b
         ]);
     });
 });
-
+*/
 
 controller.hears(['uptime','identify yourself','who are you','what is your name','version'],'direct_message,direct_mention,mention',function(bot, message) {
     var hostname = os.hostname();
@@ -401,7 +432,20 @@ function bingNsfw(message, query) {
 	}
 }
 
-
+controller.hears(['plex status'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+  var options = {
+		// url: 'https://plex.beatsforthemind.com/api?formatted=1'
+		url: 'https://plex.beatsforthemind.com/api.php?formatted=1'
+	};
+	function requestCallback (error, response, html) {
+  	if (!error && response.statusCode == 200) {
+  	  bot.reply(message, response.body);
+  	}
+  }
+  request(options, requestCallback);
+});
+    	
+    	
 controller.hears(['halimage'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
 	// https://slack.com/api/channels.setTopic?token=TOKEN&channel=CHANNEL&topic=VAR
   var options = {
@@ -469,8 +513,6 @@ controller.hears(['what\'s the current spoiler','whats the current spoiler','wha
     }
   });
 });
-
-
 
 
 controller.hears(['spoilerCmd (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
@@ -720,19 +762,6 @@ function searchMeme(message, query) {
 	
 	request(options, requestCallback);
 }
-
-controller.hears(['comicactivity'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
-	var options = {
-		url: 'https://comics.thunderblaster.io/activity',
-		headers: {
-			'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:24.0) Gecko/20100101 Firefox/24.0',
-		}
-	};
-	function requestCallback (error, response, html) {
-		bot.reply(message, html);
-	}
-	request(options, requestCallback);
-});
 
 
 // https://developers.google.com/custom-search/json-api/v1/reference/cse/list
